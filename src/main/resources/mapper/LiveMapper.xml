@@ -1,0 +1,640 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="kr.co.softbridge.daechilive.live.mapper.LiveMapper">
+    <select id="selectLiveList" parameterType="map" resultType="kr.co.softbridge.daechilive.live.dto.LiveDto">
+        select 
+        * 
+        from 
+        MEETING_LIST
+        where MEETING_CODE = #{liveCd}
+    </select>
+
+	<!-- 학생경고처리 -->
+	<parameterMap type="HashMap" id="setWarnningMap">
+		<parameter property="onairIdx" mode="IN" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+		<parameter property="userId" mode="IN" jdbcType="VARCHAR" javaType="java.lang.String"/>
+		<parameter property="warnningStatus" mode="IN" jdbcType="VARCHAR" javaType="java.lang.String"/>
+		<parameter property="adminIdx" mode="IN" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+		<parameter property="resultCode " mode="OUT" jdbcType="VARCHAR" javaType="java.lang.String"/>
+		<parameter property="resultMessage " mode="OUT" jdbcType="VARCHAR" javaType="java.lang.String"/>
+	</parameterMap>
+    <select id="setStudyWarning" parameterMap="setWarnningMap" statementType="CALLABLE">
+    	{CALL setStudyWarning(
+    	 	#{onairIdx,mode=IN,jdbcType=INTEGER},
+    	 	#{userId,mode=IN,jdbcType=VARCHAR},
+    	 	#{warnningStatus,mode=IN,jdbcType=VARCHAR},
+    	 	#{adminIdx,mode=IN,jdbcType=INTEGER},
+    	 	#{resultCode,mode=OUT,jdbcType=VARCHAR},
+    	 	#{resultMessage,mode=OUT,jdbcType=VARCHAR}
+    	)}
+    </select>
+    
+    <!-- 토큰정보 조회 -->
+    <select id="getTokenSelect" parameterType="map" resultType="kr.co.softbridge.daechilive.live.dto.LiveDto">
+    	SELECT
+				onair_idx		-- 방번호
+				, user_type as token_user_type		-- 사용자유형
+				, user_key		-- 사용자KEY
+				, user_key		-- 사용자KEY
+				, onair_type	-- 방송유형(0:강의, 1:설명회)
+		  FROM	lecture_onair_token
+		 WHERE	token_expiration_dt <![CDATA[>]]> NOW()
+		   AND	expiry_fg = '1'
+		   AND	toke_idx = #{token}
+    </select>
+    
+    <!-- 방입장시 방정보 조회 -->
+    <select id="getOnAirDataList" parameterType="map" resultType="kr.co.softbridge.daechilive.live.dto.LiveDto">
+    	<![CDATA[
+    	SET @rownum:=0; 
+    	select
+				/* 방송정보 */
+				lo.lecture_idx  /* 강의번호 */
+				, lo.broadcast_status	/* 방송상태 */
+				, lo.broadcast_st_dt /* 방송시작시간 */
+				, lo.broadcast_ed_dt /* 방송종료시간 */
+				, lo.entry_limit /* 최대참여자 수 */
+				, lo.entry_cnt /* 현재참여자수 */
+				
+				/* 강의정보 */
+				, l.course_idx /*  강좌번호 */
+				, l.lecture_title /* 강의제목 */
+				, l.lecture_status /* 강의상태(17001:대기  17002:진행  17003:휴강  17004:종료) */
+				, l.vod_file /* 수업녹화vod 원본파일명 */
+				, l.vod_link /* 수업녹화vod 경로 */
+				
+				/*  VOD강의정보 */
+				, lv.vod_title /* 동영상제목 */
+				, lv.vod_type /* 구분 */
+				, lv.vod_link /* 동영상링크 */
+				
+				/* 강좌정보 */
+				, c.lecturer_no /* 강사번호 */
+				, c.course_title /* 강좌명 */
+				, c.parent_visit_fg /* 학부모 참관 가능여부 (1: Yes, 0: No) */
+				
+				/* 방송권한 강사 정보 */
+				, CAST(op.operator_fg AS CHAR(5)) AS operator_fg /* 구분 */
+				, op.user_id operator_id /* 아이디 */
+				, op.user_nm operator_nm /* 이름 */
+				, op.mobile operator_mobile /* 휴대폰번호 */
+				, op.email operator_email /* 이메일 */
+        		, op.profile_img as admin_profile_img /* 강사프로필이미지 */
+        
+		        /* 강사/조교 접속시 정보 */
+		        , opr.operator_no as admin_idx
+		        , opr.admin_id
+		        , opr.admin_nm
+		        , CASE WHEN IFNULL(opr.lecturer_no, 0) = c.lecturer_no THEN 'Y' ELSE 'N' END AS admin_yn
+        		
+				/*  학생/학부모 정보 */
+				, @rownum:=@rownum+1 as remote_idx
+				, ui.task_lecture_idx /* 학생수강강의번호 */
+				, ui.user_type /* 구분 (29001: 학생, 29002: 학부모) */
+				, ui.user_id /* 아이디 */
+				, ui.user_nm /* 이름 */
+		        , ui.warnings_cnt
+		        , ui.user_key as user_idx	/* 학생고유키값 */
+        		, ui.profile_img as user_profile_img /* 수강생프로필이미지 */
+		from lecture_onair lo
+		join lecture l on l.lecture_idx = lo.lecture_idx
+		left outer join lecture_vod lv on lv.lecture_idx = lo.lecture_idx 
+		join course c on c.course_idx = l.course_idx
+		join operator op on op.operator_no = c.lecturer_no
+		LEFT OUTER JOIN (
+			select
+					o.operator_no
+		            , o.user_id as admin_id -- 아이디
+		            , o.user_nm as admin_nm -- 이름
+					, IFNULL(lecturer_no, o.operator_no) as lecturer_no
+			 from	operator o
+		     left outer join assistant a
+		       on a.assistant_no = o.operator_no
+		) opr on opr.lecturer_no = c.lecturer_no 
+		]]>
+		<!-- 강사 또는 조교일때 조회조건 -->
+		<if test="tokenUserType != null and tokenUserType != ''">
+			<choose>
+				<when test="tokenUserType == 0 or tokenUserType == 1">
+					and  opr.operator_no = #{userKey}
+				</when>
+				<otherwise>
+					and  opr.operator_no = 0
+				</otherwise>
+			</choose>
+		</if>
+		<!-- //강사 또는 조교일때 조회조건 -->
+		<![CDATA[
+		LEFT OUTER JOIN (
+			select 
+					stl.lecture_idx
+					, u.user_key
+					, u.user_type /* 구분 (29001: 학생, 29002: 학부모) */
+					, u.user_id /* 아이디 */
+					, s.user_nm
+					, stl.warnings_cnt
+            		, stl.task_lecture_idx
+            		, s.profile_img
+			from student_task_lecture stl
+			join student_take_course stc
+			  on stl.take_course_idx = stc.take_course_idx
+		     and stc.attend_status != '30004'
+			join user_info u
+			  on stc.student_idx = u.user_key
+			join student s
+		      on stc.student_idx = s.student_idx
+		   ]]>
+			<if test="tokenUserType != null and tokenUserType != ''">
+				<choose>
+					<when test="tokenUserType == 2 or tokenUserType == 3">
+		     			where u.user_key = #{userKey}
+		     		</when>
+		     		<otherwise></otherwise>
+		     	</choose>
+		   </if>
+		<![CDATA[
+		) ui
+		on l.lecture_idx = ui.lecture_idx
+		where lo.onair_idx = #{onairIdx}
+		]]>
+    </select>
+    
+    <!-- 방송 입장/퇴장시 참여카운트변경 -->
+    <update id="updateOnAirEntryCnt" parameterType="map">
+    	update lecture_onair
+		set entry_cnt = ${entryCnt}
+		where onair_idx = ${onairIdx}
+    </update>
+    
+    <!-- 방송강의상태 변경 -->
+    <update id="setOnAirStatus" parameterType="map">
+    	<!-- 강의상태(17001:대기  17002:진행  17003:휴강  17004:종료) -->
+    	update lecture
+		set lecture_status = #{lectureStatus}
+		where lecture_idx = #{lectureIdx}
+    </update>
+    
+    <!-- 방송강의상태 변경 -->
+    <update id="setStartOnair" parameterType="map">
+    	<!-- 방송상태(24001:대기중, 24002:테스트, 24003:방송중, 24004:종료) -->
+    	update lecture_onair
+		set broadcast_status = #{broadcastStatus}
+		where onair_idx = #{onairIdx}
+    </update>
+
+    <!-- 강의시작 알림톡 발송 -->
+    <insert id="setSjw1_8847_1" parameterType="map">
+    	insert into msg_queue (msg_type, callback, stat, request_time
+								, k_next_type, sender_key, k_attach
+								, dstaddr, subject, text, text2, k_template_code)
+		select
+		'6', '16619247', '0', date_format(now(), '%Y-%m-%d %H:%i:%s') -- STR_TO_DATE('20210615 1504', '%Y%m%d %H%i')
+		, '8', 'a778cb86f689116e2e6bcdd4fc19cff68c7f27e0', null
+		, s.mobile, '강의 시작 알림'
+		, concat(c.course_title,'의 강의실이 개설되었습니다.','\n','\n','▶강의명: ', l.lecture_title,'\n', '▶강의일자: ', date_format(l.lecture_st_time, '%Y-%m-%d'),'\n',
+		'▶강의시간: ', date_format(lo.broadcast_st_dt, '%H:%i:%s'), ' ~ ', date_format(lo.broadcast_ed_dt, '%H:%i:%s'), '\n','\n',
+		'되도록 수업시작 10분전까지 교재 준비하고 라이브 강의실에 접속 부탁드립니다.','\n','\n',
+		'감사합니다.')
+		, concat(c.course_title,'의 강의실이 개설되었습니다.','\n','\n','▶강의명: ', l.lecture_title,'\n', '▶강의일자: ', date_format(l.lecture_st_time, '%Y-%m-%d'),'\n',
+				 '▶강의시간: ', date_format(lo.broadcast_st_dt, '%H:%i:%s'), ' ~ ', date_format(lo.broadcast_ed_dt, '%H:%i:%s'), '\n','\n',
+				 '되도록 수업시작 10분전까지 교재 준비하고 라이브 강의실에 접속 부탁드립니다.','\n','\n',
+				 '감사합니다.')
+		, 'SJTW1_8847_1'
+		from student_task_lecture tl
+		join lecture l
+		on tl.lecture_idx = l.lecture_idx
+		join lecture_onair lo
+		on l.lecture_idx = lo.lecture_idx
+		join student_take_course tc
+		on tl.take_course_idx = tc.take_course_idx
+		join student s
+		on tc.student_idx = s.student_idx
+		join course c
+		on l.course_idx = c.course_idx
+		where tl.lecture_idx = #{lectureIdx}
+    </insert>
+
+	<!-- 테스트 종료시 알림톡 발송 -->
+	<insert id="setSjw1_9758_1" parameterType="map">
+		INSERT INTO msg_queue (msg_type, callback, stat, request_time
+							  , k_next_type, sender_key
+							  , dstaddr, subject, text, text2, k_template_code, k_attach)
+		SELECT
+			'6', '16619247', '0', date_format(now(), '%Y-%m-%d %H:%i:%s') -- STR_TO_DATE('20210615 1504', '%Y%m%d %H%i')
+			 , '8', 'a778cb86f689116e2e6bcdd4fc19cff68c7f27e0'
+			 , sp.mobile, '테스트알림'
+			 , concat(
+				'안녕하세요. ', sc.code_nm, '강사 ', o.user_nm, '입니다.','\n','금일 수업 리뷰테스트가 종료되었습니다.','\n','\n',
+				'▶강의일자: ', date_format(l.lecture_dt, '%Y/%m/%d'),'\n',
+			     '▶강의명: ',l.lecture_title,'\n','\n',
+			     s.user_nm, '님의 시험결과를 학부모대시보드에서 확인할 수 있습니다.','\n',
+			     '테스트 불합격 시, 강의종료 후 재시험을 통한 보충학습이 이루어집니다.','\n','\n',
+			     '감사합니다.')
+			 --  SMS 대체문자
+			 , concat(
+				'안녕하세요. ', sc.code_nm, '강사 ', o.user_nm, '입니다.','\n','금일 수업 리뷰테스트가 종료되었습니다.','\n','\n',
+				'▶강의일자: ', date_format(l.lecture_dt, '%Y/%m/%d'),'\n',
+				'▶강의명: ',l.lecture_title,'\n','\n',
+				s.user_nm, '님의 시험결과를 학부모대시보드에서 확인할 수 있습니다.','\n',
+				'테스트 불합격 시, 강의종료 후 재시험을 통한 보충학습이 이루어집니다.','\n','\n',
+				'감사합니다.')
+			 , 'SJTW1_10040_1','{
+ "attachment":{
+ "button":[
+ {
+ "name":"시험결과 확인하기",
+ "type":"WL",
+ "url_mobile":"https://modoodaechi.com/mypage/parents/dashboard",
+ "url_pc":"https://modoodaechi.com/mypage/parents/dashboard"
+ }
+ ]
+}
+}'
+		FROM student_task_lecture stl, lecture l, student_take_course stc, student s, children_info ci, school_parent sp, course c, lecturer lr, operator o, sys_code sc
+		WHERE stl.lecture_idx = l.lecture_idx
+		  AND stl.take_course_idx = stc.take_course_idx
+		  AND stc.student_idx = s.student_idx
+		  AND s.student_idx = ci.student_idx
+		  AND ci.school_parent_idx = sp.school_parent_idx
+		  AND c.course_idx = l.course_idx
+		  AND c.lecturer_no = lr.lecturer_no
+		  AND lr.lecturer_no = o.operator_no
+		  AND lr.subject = sc.code
+		  AND stl.lecture_idx  = #{lectureIdx};
+	</insert>
+
+	<!-- 학생출석SEQ조회 -->
+    <select id="getAttendIdx" parameterType="HashMap" resultType="int">
+    	<!-- {CALL getAttendIdx(
+    	 	#{lectureIdx,mode=IN,jdbcType=INTEGER},
+    	 	#{taskLectureIdx,mode=IN,jdbcType=INTEGER},
+    	 	#{attendIdx,mode=OUT,jdbcType=INTEGER}
+    	)} -->
+    	SELECT ifnull(max(attend_idx), 0) as attend_idx
+		  FROM attendance
+		 WHERE lecture_idx = #{lectureIdx}
+		   AND task_lecture_idx = #{taskLectureIdx}
+    </select>
+    
+    <!-- 학생출석처리 -->
+    <insert id="insertAttendance" parameterType="map">
+    	INSERT INTO attendance(
+			attend_fg
+			, attend_dt
+			, drop_out_dt
+			, task_lecture_idx
+			, lecture_idx
+		) VALUES (
+			'31001'
+			, DATE_FORMAT(now(), '%Y%m%d%H%i%s')
+			, NULL
+			, #{taskLectureIdx}
+			, #{lectureIdx}
+		)
+    </insert>
+    
+    <!-- 출석학생 중도이탈시간 처리 -->
+    <update id="updateAttendance" parameterType="map">
+    	UPDATE attendance SET drop_out_dt = #{dropOutDt}
+    	WHERE task_lecture_idx = #{taskLectureIdx}
+    	  AND lecture_idx = #{lectureIdx}
+    </update>
+    
+    <!-- 출석처리된 학생목록 가져오기 -->
+    <select id="selectAttendance" parameterType="map" resultType="kr.co.softbridge.daechilive.live.dto.LiveDto">
+    	 SELECT task_lecture_idx 
+    	 FROM attendance
+    	 WHERE lecture_idx = #{lectureIdx}
+    </select>
+	
+	<!-- Token 만료처리 -->
+	<update id="closeToken" parameterType="HashMap">
+		UPDATE lecture_onair_token
+		SET token_expiration_dt = NOW(),
+			expiry_fg = '0'
+		WHERE toke_idx = #{tokenIdx}
+	</update>
+	
+	<!-- 경고처리영역 -->
+	<select id="getStudentIdx" parameterType="map" resultType="HashMap">
+		<!-- 학생번호 조회 -->
+		SELECT user_key as studentIdx
+		FROM user_info 
+		WHERE user_id = #{studentUserId}
+	</select>
+	
+	<select id="getOnairLecture" parameterType="map" resultType="HashMap">
+		<!-- 강의중인 강의번호 조회 -->
+		SELECT 
+				l.course_idx, l.lecture_idx, l.lecture_number
+		  FROM	lecture l
+		  JOIN	lecture_onair lo
+			ON	l.lecture_idx = lo.lecture_idx
+		   AND	lo.onair_idx = #{onairIdx}
+	</select>
+	
+	<select id="getStudentTakeCourse" parameterType="map" resultType="HashMap">
+		<!-- 
+		 학생수강강좌번호 조회 
+		 수강강좌번호, 수강강의번호, 현재까지받은 경고수
+         -->
+		SELECT 
+				stc.take_course_idx
+				, stl.task_lecture_idx
+				, IFNULL(stl.warnings_cnt, 0)+1 as warning_cnt
+		FROM	student_task_lecture stl
+		JOIN	student_take_course stc
+		  ON	stc.take_course_idx = stl.take_course_idx
+		  AND	stc.student_idx = #{studentIdx}
+		  AND	stc.course_idx = #{courseIdx}
+		WHERE	stl.lecture_idx= #{lectureIdx}
+	</select>
+	
+	<select id="getWarningAttendIdx" parameterType="map" resultType="HashMap">
+		SELECT attend_idx
+		   FROM attendance
+		  WHERE lecture_idx = #{lectureIdx}
+			AND task_lecture_idx = #{taskLectureIdx}
+	</select>
+	
+	<update id="updateLectureWarningsCnt" parameterType="map">
+		<!-- 학생 수강 강의테이블 UPDATE -->
+		UPDATE	student_task_lecture 
+		   SET	warnings_cnt = #{warningsCnt}
+		 WHERE	task_lecture_idx = #{taskLectureIdx}
+	</update>
+	
+	<update id="updateAttendanceStatus" parameterType="map">
+		UPDATE	attendance
+		   SET 	attend_fg = '31002'
+				, drop_out_dt = DATE_SUB(NOW(), INTERVAL 5 MINUTE)
+		 WHERE	attend_idx = #{attendIdx}
+	</update>
+	
+	<insert id="insertStudyWarningLog" parameterType="map">
+		<!-- 경고이력 테이블 INSERT -->
+		INSERT INTO study_warning(
+			task_lecture_idx				-- 학생수강 강의번호
+			, warning_type					-- 경고구분
+			, warning_reason				-- 경고사유
+			, warning_dt					-- 경고일시
+			, warning_user					-- 경고자
+			, warning_cancel_fg				-- 경고취소여부(0 :아니오, 1: 취소)
+		) VALUES(
+			#{taskLectureIdx}
+			, #{warningType}
+			, #{warningReason}
+			, NOW()
+			, #{warningUser}
+			, '0'
+		)
+	</insert>
+	
+	<!-- 3회이상 경고시 알림톡 발송테이블에 적재 -->
+	<insert id="setSjw1_8869_1"  parameterType="map">
+		insert into msg_queue (msg_type, callback, stat, request_time
+								, k_next_type, sender_key, k_attach
+								, dstaddr, subject, text, text2, k_template_code)
+		select
+		'6', '16619247', '0', date_format(now(), '%Y-%m-%d %H:%i:%s') -- STR_TO_DATE('20210615 1504', '%Y%m%d %H%i')
+		, '8', 'a778cb86f689116e2e6bcdd4fc19cff68c7f27e0', null
+		, d.mobile, '경고발송'
+		, concat(
+		'안녕하세요. ', d.code_nm, '강사 ', d.teacher_nm, '입니다.','\n',
+		d.student_nm, ' 학생이 수업태도 불량으로 경고를 ', d.warnings_cnt, '회 부여받았습니다.','\n','\n',
+		'[경고]','\n', d.msg)
+		--  SMS 대체문자
+		, concat(
+		'안녕하세요. ', d.code_nm, '강사 ', d.teacher_nm, '입니다.','\n',
+		d.student_nm, ' 학생이 수업태도 불량으로 경고를 ', d.warnings_cnt, '회 부여받았습니다.','\n','\n',
+		'[경고]','\n', d.msg)
+		, 'SJTW1_8869_1'
+		from (
+			select 
+				sc2.code_nm
+				, o.user_nm as teacher_nm
+				, s.user_nm as student_nm
+				, tl.warnings_cnt
+				, group_concat( concat( date_format(w.warning_dt, '%H:%i:%s'), ', ', sc.code_nm ) ORDER BY w.warning_dt ASC SEPARATOR '\r\n') as msg
+				, sp.mobile
+			from student_task_lecture tl
+			join lecture l
+			on tl.lecture_idx = l.lecture_idx
+			join student_take_course tc
+			on tl.take_course_idx = tc.take_course_idx
+			join student s
+			on tc.student_idx = s.student_idx
+			join children_info ci
+			on ci.student_idx = s.student_idx
+			join school_parent sp
+			on sp.school_parent_idx = ci.school_parent_idx
+			join course c
+			on l.course_idx = c.course_idx
+			join lecturer lr
+			on c.lecturer_no = lr.lecturer_no
+			join operator o
+			on lr.lecturer_no = o.operator_no
+			join study_warning w
+			on tl.task_lecture_idx = w.task_lecture_idx
+			join sys_code sc
+			on w.warning_reason = sc.code
+			and sc.gcode = 47
+			and sc.code != 47004
+			join sys_code sc2
+			on lr.subject = sc2.code
+			and sc2.gcode = 10
+			where tl.task_lecture_idx = #{taskLectureIdx}
+			group by sc2.code_nm, o.user_nm, tl.warnings_cnt, s.user_nm, sp.mobile
+		) d
+	</insert>
+
+	<!-- 중도이탈 -->
+	<insert id="setSjw1_9760_1"  parameterType="map">
+		insert into msg_queue (msg_type, callback, stat, request_time
+							  , k_next_type, sender_key, k_attach
+							  , dstaddr, subject, text, text2, k_template_code)
+		select
+			'6', '16619247', '0', date_format(now(), '%Y-%m-%d %H:%i:%s') -- STR_TO_DATE('20210615 1504', '%Y%m%d %H%i')
+			 , '8', 'a778cb86f689116e2e6bcdd4fc19cff68c7f27e0', null
+			 , d.mobile, '경고발송'
+			 , concat(
+			'안녕하세요 ', d.code_nm, '강사 ', d.teacher_nm, '입니다.','\n',
+			d.student_nm, ' 학생이 수업 중 강의실을 퇴장하였습니다.','\n','\n',
+			'▶중도이탈날짜: ', date_format(now(), '%Y-%m-%d'),'\n',
+			'▶중도이탈시간: ', date_format(now(), '%H시 %i분 %s초'),'\n','\n'
+			'확인부탁드립니다.')
+			 --  SMS 대체문자
+			 , concat(
+			'안녕하세요 ', d.code_nm, '강사 ', d.teacher_nm, '입니다.','\n',
+			d.student_nm, ' 학생이 수업 중 강의실을 퇴장하였습니다.','\n','\n',
+			'▶중도이탈날짜: ', date_format(now(), '%Y-%m-%d'),'\n',
+			'▶중도이탈시간: ', date_format(now(), '%H시 %i분 %s초'),'\n','\n'
+			'확인부탁드립니다.')
+			 , 'SJTW1_9760_1'
+		from (
+				 select
+					 sc2.code_nm
+					  , o.user_nm as teacher_nm
+					  , s.user_nm as student_nm
+					  , tl.warnings_cnt
+					  , group_concat( concat( date_format(w.warning_dt, '%H:%i:%s'), ', ', sc.code_nm ) ORDER BY w.warning_dt ASC SEPARATOR '\r\n') as msg
+					  , sp.mobile
+				 from student_task_lecture tl
+						  join lecture l
+							   on tl.lecture_idx = l.lecture_idx
+						  join student_take_course tc
+							   on tl.take_course_idx = tc.take_course_idx
+						  join student s
+							   on tc.student_idx = s.student_idx
+						  join children_info ci
+							   on ci.student_idx = s.student_idx
+						  join school_parent sp
+							   on sp.school_parent_idx = ci.school_parent_idx
+						  join course c
+							   on l.course_idx = c.course_idx
+						  join lecturer lr
+							   on c.lecturer_no = lr.lecturer_no
+						  join operator o
+							   on lr.lecturer_no = o.operator_no
+						  join study_warning w
+							   on tl.task_lecture_idx = w.task_lecture_idx
+						  join sys_code sc
+							   on w.warning_reason = sc.code
+								   and sc.gcode = 47
+						  join sys_code sc2
+							   on lr.subject = sc2.code
+								   and sc2.gcode = 10
+				 where tl.task_lecture_idx = #{taskLectureIdx}
+				 group by sc2.code_nm, o.user_nm, tl.warnings_cnt, s.user_nm, sp.mobile
+			 ) d
+	</insert>
+
+	<!-- 출석 알림톡 -->
+	<insert id="setSjw1_9764_1"  parameterType="map">
+		INSERT INTO msg_queue (msg_type, callback, stat, request_time
+							  , k_next_type, sender_key, k_attach
+							  , dstaddr, subject, text, text2, k_template_code)
+		SELECT
+			'6', '16619247', '0', date_format(now(), '%Y-%m-%d %H:%i:%s') -- STR_TO_DATE('20210615 1504', '%Y%m%d %H%i')
+			 , '8', 'a778cb86f689116e2e6bcdd4fc19cff68c7f27e0', null
+			 , sp.mobile, '출석알림'
+			 , concat(
+				'안녕하세요 ', sc.code_nm, '강사 ', o.user_nm, '입니다.','\n',
+			     s.user_nm, ' 학생이 금일 수업에 출석하였습니다.','\n','\n'
+			    '▶ 강좌명: ',c.course_title,'\n',
+			    '▶ 강의명: ',l.lecture_title,', ', date_format(l.lecture_st_time, '%H시 %i분'), '~',date_format(l.lecture_ed_time, '%H시 %i분'),'\n',
+			    '▶ 출석시간: ',date_format(a.attend_dt, '%H시 %i분 %s초'),'\n','\n',
+			    '수업시작 후 입장 시 지각처리되며, 수업시작 후 30분 이상 지각 시 결석처리됩니다.','\n',
+			    '결석처리가 되더라도 수업을 수강하는 것에는 제한이 없습니다.','\n','\n',
+			    '감사합니다.')
+			 --  SMS 대체문자
+			 , concat(
+				'안녕하세요 ', sc.code_nm, '강사 ', o.user_nm, '입니다.','\n',
+				s.user_nm, ' 학생이 금일 수업에 출석하였습니다.','\n','\n'
+					'▶ 강좌명: ',c.course_title,'\n',
+				'▶ 강의명: ',l.lecture_title,', ', date_format(l.lecture_st_time, '%H시 %i분'), '~',date_format(l.lecture_ed_time, '%H시 %i분'),'\n',
+				'▶ 출석시간: ',date_format(a.attend_dt, '%H시 %i분 %s초'),'\n','\n',
+				'수업시작 후 입장 시 지각처리되며, 수업시작 후 30분 이상 지각 시 결석처리됩니다.','\n',
+				'결석처리가 되더라도 수업을 수강하는 것에는 제한이 없습니다.','\n','\n',
+				'감사합니다.')
+			 , 'SJTW1_10039_1'
+		FROM attendance a, lecture l, student_task_lecture stl, student_take_course stc, student s, children_info ci, school_parent sp, course c, lecturer lr, operator o, sys_code sc
+		WHERE a.task_lecture_idx = #{taskLectureIdx}
+		  AND a.attend_fg = 31001
+		  AND a.lecture_idx = #{lectureIdx}
+		  AND l.lecture_idx = a.lecture_idx
+		  AND stl.task_lecture_idx = a.task_lecture_idx
+		  AND stl.take_course_idx = stc.take_course_idx
+		  AND stc.student_idx = s.student_idx
+		  AND s.student_idx = ci.student_idx
+		  AND ci.school_parent_idx = sp.school_parent_idx
+		  AND c.course_idx = l.course_idx
+		  AND c.lecturer_no = lr.lecturer_no
+		  AND lr.lecturer_no = o.operator_no
+		  AND lr.subject = sc.code;
+	</insert>
+
+
+	<!-- //경고처리영역 -->
+	
+	<!-- 강의에 참여한 인원수 Update -->
+	<update id="updateOnairStudentCnt" parameterType="map">
+		UPDATE	lecture_onair 
+		   SET	entry_cnt = #{entryCnt}
+		 WHERE	onair_idx = #{onairIdx}
+	</update>
+	
+	<insert id="regToken" parameterType="map">
+		insert into lecture_onair(lecture_idx, broadcast_status, entry_limit, entry_cnt, broadcast_st_dt, broadcast_ed_dt, reg_dt, reg_nm )
+		select lecture_idx, '24001', entry_limit, entry_cnt, broadcast_st_dt, broadcast_ed_dt, reg_dt, reg_nm 
+		from lecture_onair
+		where onair_idx = 1
+		;
+		
+		insert into lecture_onair_token(onair_idx, user_type, user_key, token_expiration_dt, expiry_fg, onair_type)
+		select a.onair_idx, b.user_type, b.user_key, b.token_expiration_dt, 1, 0
+		from lecture_onair a
+		left outer join (
+			select user_type, user_key, DATE_ADD(NOW(), INTERVAL 2 MONTH) as token_expiration_dt, expiry_fg, onair_type
+		    from lecture_onair_token
+		    where onair_idx = (select max(onair_idx) from lecture_onair_token)
+		    group by user_type, user_key, DATE_ADD(NOW(), INTERVAL 2 MONTH), expiry_fg, onair_type
+		    order by user_type
+		) b
+		on 1=1
+		where a.onair_idx = (select max(onair_idx) from lecture_onair);
+	</insert>
+	
+	<select id="getTokenIdString" parameterType="map" resultType="String">
+		SELECT GROUP_CONCAT(CONCAT(a.token_idx, ' : ', a.user_type) SEPARATOR ', '),  GROUP_CONCAT(a.user_type SEPARATOR ', ') 
+		from (
+				select onair_idx, toke_idx as token_idx,
+						case when user_type=0 then '강사' 
+							when user_type=1 then '조교' 
+						    when user_type=2 then '학생'
+						    when user_type=3 then '학부모' end as user_type
+				FROM lecture_onair_token
+		 		where onair_idx = (select max(onair_idx) from lecture_onair)
+		 ) a
+		 GROUP BY onair_idx
+	</select>
+	
+	<select id="tokenList" parameterType="map" resultType="HashMap">
+		select 
+				 toke_idx as tokenIdx
+				 , onair_idx as onairIdx
+				 , case when user_type=0 then '강사' 
+					when user_type=1 then '조교' 
+				    when user_type=2 then '학생'
+				    when user_type=3 then '학부모' else '폐기' end as userType
+				 , case when expiry_fg = 1 and token_expiration_dt <![CDATA[>]]> now() then '사용가능' 
+						when expiry_fg = 1 and token_expiration_dt <![CDATA[<]]> now() then '만료(접속시간초과)' 
+						else '만료' end as expYn
+				 , case when onair_type = 0 then '강의' else '설명회' end as onairType
+		 from lecture_onair_token
+		 order by onair_idx, user_type, toke_idx, user_key, expiry_fg desc
+	</select>
+	
+	<update id="resetOnAirData" parameterType="map">
+		<!-- 토큰데이터 초기화 -->
+		update lecture_onair_token 
+			set expiry_fg = 1
+			, token_expiration_dt = DATE_ADD(NOW(), INTERVAL 2 MONTH) 
+		where toke_idx > 0;
+		
+		<!-- 학생경고건 0으로 초기화 -->
+		update student_task_lecture set warnings_cnt = 0 where task_lecture_idx > 0;
+		
+		<!-- 경고히스토리 전체삭제 -->
+		delete from study_warning where study_warning_idx > 0;
+		
+		<!-- 출석부 데이터 전체삭제 -->
+		delete from attendance where attend_idx > 0 and task_lecture_idx > 0;
+		
+		<!-- 전체방송의 상태 대기중으로 변경 -->
+		update lecture_onair set broadcast_status = '24001' where onair_idx > 0;
+	</update>
+</mapper>

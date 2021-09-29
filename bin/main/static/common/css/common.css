@@ -1,0 +1,104 @@
+/* member */
+.last-box {padding-bottom:170px;}
+
+.join_wrap {padding-top:160px; text-align:center;}
+.join_wrap .contents {max-width: 360px; margin: 0 auto;}
+.page_title {margin: 0 -100%;}
+.page_title h2 {font-size: 24px; line-height: 30px; font-weight: 700; color: #000; margin-bottom: 11px;}
+.page_title p {font-size: 15px; line-height: 24px; font-weight: 400; color: #777; margin-bottom: 28px;}
+.myform_box {position: absolute; top: 10px; right: 15px;}
+.myform_box:before {content: ''; display: table;}
+.myform_box:after {content: ''; display: block; clear: both;}
+.myform_box button.pswd-show, .myform_box input.pswd-show[type="button"] {display: none;}
+/*.myform_box span.clear, .myform_box span.clear-dlt { display: none; width: 1rem; height: 1rem; margin-top: 1.06rem; float: left; background-size: contain; background-repeat: no-repeat; }
+.myform_box span.clear { background: url("https://img.iipamaster.com/common/icon/icon_inputck2.png"); }
+.myform_box span.clear-dlt { background: url("https://img.iipamaster.com/common/icon/icon_inputdl.png"); }*/
+.myform_box span.subtext {display: inline-block; font-size: 14px; line-height: 20px; font-weight: 700; color: #111; margin-top: 4px;}
+.form-box-input {position: relative; width: 100%; margin-bottom: 3.4%;}
+.form-box-input .msg-box {display: block; color: #fc6160; text-align: left; margin-top: 0.357em;}
+.form-box-input .info-msg label {display: none;}
+
+.login_find_wrap {display:table; width: 100%; margin-top:14px;}
+.login_find_wrap a:before {content: ''; display: inline-block; vertical-align: middle; width: 1px; height: 15px; margin: -5px 6px auto; background: #ccc;}
+.login_find_wrap a:first-child:before {display: none;}
+
+/* live fvod */
+.surface {position: relative;}
+.surface.radius {border-radius: 5px; overflow: hidden;}
+.surface .surf_in {position: relative;}
+.surface .surf_rsl {position: relative; width: 100%; height: 0; padding-bottom: 56.25%; background: #eee;}
+.surface .surf_rsl img {width: 100%;}
+
+/* 설정 */
+.setlist_area {margin-top: 50px;}
+.setlist_area:first-child {margin-top: 0;}
+.setlist_area dt {margin-bottom: 10px; font-size: 13px; line-height: 19px; font-weight: 700; color: #333;}
+.setlist_area dd {font-size: 13px; line-height: 19px; font-weight: 400; color: #333;}
+
+/* 프로필 */
+.user_thumb {display: table; position: relative; border-radius: 50%; overflow: hidden;}
+.user_thumb.normal {width: 40px; height: 40px;}
+.user_thumb.big {width: 120px; height: 120px;}
+.user_thumb.big.line {border: 4px solid #00704a;}
+.user_thumb span {width: inherit; height: inherit;}
+.user_thumb span:after {content: " "; width: inherit; height: inherit; position: absolute; top: 0px; left: 0px; border-radius: 50%; background: #ddd url('../img/icon/img_profile.png') no-repeat; background-size: cover;}
+.user_thumb span img {display: block; position: relative; z-index: 1; width: inherit; height: inherit; border-radius: 50%; overflow: hidden;}
+
+
+/* table */
+.table_basic_none {padding: 80px 0; font-size: 15px; line-height: 22px; font-weight: 400; color: #666; text-align: center; border-top: 1px solid #333;}
+.table_basic_none2 {padding: 80px 0; font-size: 15px; line-height: 22px; font-weight: 400; color: #666; text-align: center;}
+.table_basic_board + .table_basic_board {margin-top: 10px;}
+.table_basic_board th.left, .table_basic_board td.left {padding-left: 20px !important; text-align: left !important;}
+.table_basic_board th.top, .table_basic_board td.top {vertical-align: top;}
+.table_basic_board.none table {border-top: 0 !important;}
+.table_basic_board table + p {margin-top: 10px; font-size: 13px; color: #666;}
+.table_basic_board.noline table {border-top: none !important;}
+.table_basic_board.board1 table {border-top: 1px solid #333;}
+.table_basic_board.board1 th {padding: 15px 0; font-size: 14px; line-height: 20px; font-weight: 700; color: #000; text-align: center; background: #fff; border-bottom: 1px solid #333;}
+.table_basic_board.board1 td {padding: 20px 0; font-size: 14px; line-height: 20px; font-weight: 400; color: #333; text-align: center; background: #fff; border-bottom: 1px solid #ddd;}
+.table_basic_board.board1.both td:first-child {text-align: left;}
+.table_basic_board.board1.both td:last-child {text-align: right; vertical-align: bottom;}
+.table_basic_board.board1.both td.stretch {padding: 0 !important; text-align: center !important; vertical-align: middle !important;}
+.table_basic_board.board1.both td.stretch .btn_stretch {height: 114px;}
+.table_basic_board.board1 .toptxt {margin-bottom: 6px; font-size: 0;}
+.table_basic_board.board1 .toptxt h3 {width: calc(100% - 100px); font-size: 15px; line-height: 23px; font-weight: 400; color:#000; vertical-align: top; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; word-wrap: normal;}
+.table_basic_board.board1 .toptxt > .btn_basic5 {margin-right: 8px;}
+.table_basic_board.board1 .bottomtxt {font-size: 0;}
+.table_basic_board.board1 .bottomtxt span {font-size: 13px; line-height: 19px; font-weight: 400; color:#999;}
+.table_basic_board.board1 .bottomtxt span:first-child:after {content:''; display: inline-block; vertical-align: top; width: 3px; height: 3px; margin:8px 6px 0; border-radius: 50%; background: #999;}
+.table_basic_board.board1 .date {font-size: 13px; line-height: 19px; font-weight: 400; color:#666}
+.table_basic_board.board1 .bottomtxt .date {display: block; /*margin-top: 6px;*/ color: #00704a;}
+.table_basic_board.board2 table {border-top: 1px solid #555; border-bottom: 1px solid #555;}
+.table_basic_board.board2 tr:first-child th, .table_basic_board.board2 tr:first-child td {border-top: none;}
+.table_basic_board.board2 th {vertical-align: top; padding: 15px 0; font-size: 14px; line-height: 20px; font-weight: 400; color: #999; text-align: left; background: #fff; border-top: 1px solid #ddd;}
+.table_basic_board.board2 td {padding: 15px 0; font-size: 14px; line-height: 20px; font-weight: 400; color: #000; text-align: left; background: #fff; border-top: 1px solid #ddd;}
+.table_basic_board.board3 table {border: 1px solid #ebebeb;}
+.table_basic_board.board3 tr:first-child th, .table_basic_board.board3 tr:first-child td {border-top: none;}
+.table_basic_board.board3 th {padding: 10px 15px; font-size: 16px; line-height: 24px; font-weight: 700; color: #000; text-align: left; background: #f7f7f7; border-top: 1px solid #ebebeb;}
+.table_basic_board.board3 th.lec {font-size: 20px; line-height: 29px; font-weight: 700; text-align: center; background: #eff8f5; border-right: 1px solid #ebebeb;}
+.table_basic_board.board3 td {padding: 10px 15px; font-size: 16px; line-height: 39px; font-weight: 400; color: #000; text-align: left; background: #fff; border-top: 1px solid #ebebeb;}
+.table_basic_board.board4 th {padding: 10px 0; font-size: 14px; line-height: 20px; font-weight: 700; color: #333; text-align: left; background: #fff;}
+.table_basic_board.board4 td {padding: 10px 0; font-size: 14px; line-height: 20px; font-weight: 400; color: #666; text-align: left; background: #fff;}
+.table_basic_board.board5 table {border-top: 1px solid #ddd;}
+.table_basic_board.board5 th {padding: 15px 0; font-size: 13px; line-height: 19px; font-weight: 400; color: #111; text-align: center; background: #fff; border-bottom: 1px solid #ddd;}
+.table_basic_board.board5 td {padding: 15px 0; font-size: 13px; line-height: 19px; font-weight: 400; color: #111; text-align: center; background: #fff;}
+.table_basic_board.board6 table {border-top: 1px solid #333;}
+.table_basic_board.board6 th {padding: 15px 0 15px 10px; font-size: 14px; line-height: 20px; font-weight: 700; color: #000; text-align: left; background: #fff; border-bottom: 1px solid #ddd;}
+.table_basic_board.board6 td {padding: 15px 0; font-size: 14px; line-height: 20px; font-weight: 400; color: #000; text-align: left; background: #fff; border-bottom: 1px solid #ddd;}
+.table_basic_board.board7 th {padding: 10px 0; font-size: 14px; line-height: 20px; font-weight: 700; color: #333; text-align: left; background: #fff;}
+.table_basic_board.board7 th.tit {padding-top: 0; font-size: 19px; line-height: 27px; font-weight: 700; color: #000;}
+.table_basic_board.board7 td {padding: 10px 0; font-size: 14px; line-height: 20px; font-weight: 400; color: #666; text-align: left; background: #fff;}
+.table_basic_board.board8 tr:first-child th, .table_basic_board.board8 tr:first-child td {padding: 20px 0; font-size: 15px; line-height: 22px; font-weight: 400; color: #000; text-align: center; background: #fff;}
+.table_basic_board.board8 tr:first-child th:first-child, .table_basic_board.board8 tr:first-child td:first-child {vertical-align: top;}
+.table_basic_board.board8 th .date, .table_basic_board.board8 td .date {margin-top: 6px; font-size: 13px; line-height: 19px; font-weight: 400; color: #999;}
+.table_basic_board.board8 th, .table_basic_board.board8 td {padding: 10px 0; font-size: 14px; line-height: 20px; font-weight: 400; color: #555; text-align: center; background: #fcfcfc;}
+.table_basic_board.board8 th.btn, .table_basic_board.board8 td.btn {font-size: 0 !important; text-align: right !important; padding-right: 10px !important;}
+.table_basic_board.board8 th.btn a, .table_basic_board.board8 td.btn a {width: 115px; margin: 0 5px; cursor:default;}
+.table_basic_board.board8 th.btn a.active, .table_basic_board.board8 th.btn a.on, .table_basic_board.board8 td.btn a.active, .table_basic_board.board8 td.btn a.on {cursor:pointer;}
+
+.table_basic_board.board9 table {border-top: 1px solid #333;}
+.table_basic_board.board9 th {padding: 20px 0; font-size: 15px; line-height: 20px; font-weight: 700; color: #000; text-align: center; background: #fff; border-bottom: 1px solid #d1d1d1;}
+.table_basic_board.board9 td {padding: 20px; font-size: 15px; line-height: 20px; font-weight: 400; color: #333; text-align: left; background: #fff; border-bottom: 1px solid #ebebeb;}
+.table_basic_board.board9 td:first-child {padding: 20px 0; text-align: center;}
+

@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="ko">
+	<head>
+		<meta content="text/html" charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, maximum-scale=1, minimum-scale=1, initial-scale=1, user-scalable=yes">
+		<meta name="Title" content="">
+		<meta name="Keywords" content="">
+		<meta name="Description" content="">
+		<title>모두의대치동</title>
+		<link rel="stylesheet" type="text/css" href="/common/css/common.css"/>
+		<link rel="stylesheet" type="text/css" href="/common/css/reset.css"/>
+		<link rel="stylesheet" type="text/css" href="/live/css/reset.css"/>
+		<link rel="stylesheet" type="text/css" href="/live/css/player.css"/>
+		<style>
+			#canvas {
+				object-fit: contain;
+			}
+		</style>
+		<script type="text/javascript" src="https://www.bravecompany.net/js/jquery.min.js"></script>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/6.4.0/adapter.min.js" ></script>
+		<script type="text/javascript" src="/common/js/janus.js"></script>
+		<script type="text/javascript" src="/common/js/video.device.js"></script>
+		<script type="text/javascript" src="/common/js/security.js"></script>
+		<script type="text/javascript" src="/live/js/live_page_c.js"></script>
+		<script type="text/javascript" src="/live/js/live_page_p.js"></script>
+		<script type="text/javascript" src="/live/js/live_videoroom_rec.js"></script>
+		<!-- record -->
+		<script src="/common/js/RecordRTC.js"></script>
+		<script src="https://www.webrtc-experiment.com/EBML.js"></script> 
+		
+	</head>
+	<body onload="endQuestion();" style="-ms-overflow-y: hidden; overflow-y: hidden;">
+		<input type="hidden" id="mediaUrl" value="" />
+		<input type="hidden" id="chatUrl" value="" />
+		<input type="hidden" id="roomNo" value="" />
+		<input type="hidden" id="userId" value="" />
+		<input type="hidden" id="userNick" value="" />
+		<input type="hidden" id="userLevel" value="" />
+		<input type="hidden" id="managerId" value="" />
+		
+		<!-- 스트리밍 플레이어 --> <!-- 학생ver -->
+		<div class="modoo_player">
+			<!-- 플레이어 영역 -->
+			<div class="player_container fullscreen">
+				<!-- 영상 -->
+				<section class="player_media">
+					<div class="media_container">
+						<div class="media_surface" style="width:100%;height:100vh;">
+							<div class="surface" style="z-index: 0; background-color: black;">				
+<!--									<canvas id="videoCanvas" style="width:100%; height:100vh;" onerror="/img/test_img1.png">이 브라우저는 캔버스를 지원하지 않습니다.</canvas>-->
+									<canvas id="videoCanvas" width="1280" height="720" onerror="/img/test_img1.png">이 브라우저는 캔버스를 지원하지 않습니다.</canvas>
+							</div>
+						</div>
+ 
+						<div class="media_surface" style="object-fit:contain; z-index:-999;">
+							<div class="surface">
+								<div class="surf_in">
+									<div class="surf_rsl" id="teacher_screen">
+										<video class="rounded centered rec" id="remotevideo1" muted autoplay playsinline disablePictureInPicture controlsList="nodownload noremoteplayback" oncontextmenu="return false;" style="display: block;"></video>
+									</div>
+								</div>
+							</div>
+				
+							<div class="thumb_prof">
+								<div class="surface">
+									<div class="surf_in">
+										<div class="surf_rsl">
+											<div id="teacher_cam" class="surf_rsl" style="width:240px; height:135px; border-radius: 5px">
+												<video class="rounded centered rec" id="remotevideo0" muted autoplay playsinline disablePictureInPicture controlsList="nodownload noremoteplayback" oncontextmenu="return false;" style="display: block;"></video>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+				
+						</div>
+		 
+						<div class="media_controller"> 
+							<div class="media_button">
+								<div class="button_center">
+									<div class="button"><a href="javascript:;" class="btn_feed rec" id="recEnd" style="display:none;"><div><i class="btn_rec">녹화</i></div>강의녹화</a></div> <!-- pause -->
+									<div class="button"><a href="javascript:;" id="recStart" class="btn_feed rec"><div><i class="btn_rec">녹화</i></div>강의녹화시작</a></div> <!-- start -->					
+									
+								</div>
+							</div>
+						</div>
+						<input type="hidden" id="audio-input" value=""/>
+						<input type="hidden" id="video-source" value=""/>
+					</div>
+				</section>
+			</div>
+		</div>
+				
+<script type="text/javascript">
+	let canvas = document.getElementById ( 'videoCanvas');
+	const  pixelRatio = 1; // window.devicePixelRatio || 1 -> 1 로 변경 (2021-05-21 김민수. 화면 확대현상)
+
+	// 화면공유 비디오
+	var v_w = 0;
+	var v_h = 0;
+	
+	// 웹캠  비디오
+	var wv_w = 0;
+	var wv_h = 0;
+	var wtop = 0;
+	var wleft = 0;
+	var wPos = 0;
+	
+	let screenElm;
+	let camElm;
+	
+	let fixCamWidth;
+	let fixCamheight;
+	
+	var recStartBtn = document.querySelector('#recStart');
+	
+	var drawInterval;
+	var localStream;
+
+	popupMode = 'rec';
+	SERVER_URL = '[[${mediaUrl}]]';
+	CHAT_URL = '[[${chatUrl}]]';
+	roomNo = parseInt('[[${liveCode}]]');
+	userId = '[[${userId}]]_REC';
+	userNick = '[[${userNick}]]';
+	userLevel = '[[${userLevel}]]';
+	managerId = '[[${managerId}]]';
+	maxMemCnt = parseInt('[[${maxPeople}]]');
+	
+	// Options for getDisplayMedia()
+	let checkEndBtn = false;
+	let displayMediaOptions = {
+		video: {
+			cursor: "always"
+		},
+		audio: {
+			autoGainControl: false,
+			echoCancellation: false,
+			noiseSuppression: false,
+			googAutoGainControl: false
+/*
+			autoGainControl: true,
+			echoCancellation: true,
+			noiseSuppression: true,
+			googAutoGainControl: true
+*/
+		}
+		//audio: true
+		//audio: false
+	};	
+	
+	$(document).ready(function () {
+		$('#mediaUrl').val(parseInt('[[${mediaUrl}]]'));
+		$('#chatUrl').val(parseInt('[[${chatUrl}]]'));
+		$('#roomNo').val(parseInt('[[${liveCode}]]'));
+		$('#userId').val('[[${userId}]]_REC');
+		$('#userNick').val('[[${userNick}]]');
+		$('#userLevel').val('[[${userLevel}]]');
+		$('#managerId').val('[[${managerId}]]');	
+	    //loadCanvas();
+
+		let e = jQuery.Event( "keypress", { keyCode: 13 } );
+		$('#recStart').trigger(e);
+		$("#recEnd").trigger(e);
+		$("#recEnd").click(function(){
+			endRec();
+		}); 	
+		
+	    $(window).data('beforeunload',window.onbeforeunload);
+	});
+		
+	recStartBtn.onclick = function() {
+		startRec();
+	}	
+		
+ 	document.onkeydown = function ( event ) {
+ 		if ( event.keyCode == 116  // F5
+	        || event.ctrlKey == true && (event.keyCode == 82) // ctrl + r
+	    ) {
+	    	exit();
+	    }
+	}
+ 	
+ 	window.onbeforeunload = function() {
+		return exit();
+	};
+
+	function endQuestion() {
+		window.onbeforeunload = function (e) {
+			return 0;
+		};
+	}
+	
+	function startRec() {
+		checkEndBtn = true;
+		$("#recEnd").addClass("pause");
+		$("#recEnd").show();
+		$("#recStart").hide();
+		$(opener.document).find("#recBtn").addClass('pause2');
+		$(opener.document).find("#recBtn").click();
+		startCapture();
+	}
+	
+	function endRec() {
+		$("#recEnd").removeClass("pause");
+		$("#recEnd").hide();
+		$("#recStart").show();	
+		exit();
+	}
+	
+	function exit() {
+        //접속 강제 종료
+        let checkPause = $(opener.document).find("#recBtn").hasClass('pause2');
+		
+        if(checkEndBtn) {
+        	stopRecording();	
+        }
+       	if(checkPause) {
+			$(opener.document).find("#recBtn").removeClass('pause2');
+			$(opener.document).find("#recBtn").click();
+			clearInterval(drawInterval);
+		}
+
+		checkEndBtn = false;
+	}
+	
+	function quit() {
+		leave();
+	}
+	
+	function loadCanvas(){
+		/* startCapture(); */
+		if (canvas.getContext) {
+			var ctx = canvas.getContext ( '2d');
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+		}
+	}
+	
+			
+	var mergeAudioStreams = (desktopStream, voiceStream) => {		
+		  const context = new AudioContext();		    
+		  // Create a couple of sources
+		  const source1 = context.createMediaStreamSource(desktopStream);
+		  const source2 = context.createMediaStreamSource(voiceStream);
+		  
+		  const destination = context.createMediaStreamDestination();
+		  const desktopGain = context.createGain();
+		  const voiceGain = context.createGain();
+		    
+		  desktopGain.gain.value = 0.7;
+		  voiceGain.gain.value = 0.7;
+		   
+		  source1.connect(desktopGain).connect(destination);
+		  // Connect source2
+		  source2.connect(voiceGain).connect(destination);		    
+		  return destination.stream.getAudioTracks()[0];
+		};
+
+	function startCapture() {
+		try {
+ 			camElm = document.querySelector('#remotevideo0');
+  		 	screenElm = document.querySelector('#remotevideo1');
+			drawInterval = setInterval (function () {draw ();}, 12);// 15 ms
+			localStream = canvas.captureStream (45);// 60 fps
+			localStream.addTrack(camElm.srcObject.getAudioTracks()[0]);
+
+			// 화면공유시 음성공유 기능삭제로 mergeAudioStreams 기능 삭제
+			// if(fStream[1]){
+			// 	localStream.addTrack( mergeAudioStreams(screenElm.srcObject,camElm.srcObject) );
+			// } else {
+			// 	localStream.addTrack(camElm.srcObject.getAudioTracks()[0]);
+			// }
+			startRecording(localStream);
+										
+		} catch(err) {
+			console.error("Error: " + err);
+		}
+	}
+		
+	async function draw () {
+		camElm = document.querySelector('#remotevideo0'); 		
+  		screenElm = document.querySelector('#remotevideo1');
+		if (isNull(screenElm) && isNull(camElm)) {					
+			return;
+		} else {
+			var ctx = canvas.getContext ('2d');
+			if (ctx) {
+				if (fStream[0] && !fStream[1]) {				
+						if(camElm.videoWidth <= 0)
+							return;						
+						ctx.drawImage (camElm, 0, 0, canvas.width,  canvas.height);
+				}else {
+					if (fStream[0] && fStream[1]) {
+						set_curOptionsInfo(screenElm);
+						ctx.drawImage (screenElm, 0, 0,canvas.width,  canvas.height);
+					}
+					if (camElm && camElm.videoWidth > 0) {
+						camElm.style.objectFit = "cover";
+						let posCamLeft = parseInt(wv_w) - parseInt(fixCamWidth) - 50;
+						let posCamTop = 50;
+						ctx.drawImage (camElm, posCamLeft, posCamTop, fixCamWidth, fixCamheight);
+					}
+				}
+				
+				// for sprites scaled up to retina resolution
+				ctx.mozImageSmoothingEnabled = false;
+				ctx.webkitImageSmoothingEnabled = false;
+				ctx.msImageSmoothingEnabled = false;
+				ctx.imageSmoothingEnabled = false;	
+				ctx.scale(pixelRatio, pixelRatio);
+			}
+		}
+		
+	} 	
+
+	function set_curOptionsInfo(screenElm) {		
+		if (screenElm.srcObject) {
+			fixCamWidth = 210;//290;
+			fixCamheight = fixCamWidth/16*9;//130;
+									
+			const videoTrack = screenElm.srcObject.getVideoTracks()[0];
+			//console.log(JSON.stringify(videoTrack.getSettings(), null, 2));
+			var v_info = videoTrack.getSettings();
+			var width=v_info.width;
+			var height=v_info.height;
+			//console.log(width, height);
+			wv_w = width;
+			wv_h = height;						
+			if ( (v_w != width) || (v_h != height) ) {
+				v_w = width;
+				v_h = height;
+
+				canvas.width = width * pixelRatio;
+				canvas.height = height * pixelRatio;
+			}
+			
+			// fullscreen으로 띄우는경우 모니터 사이즈에 맞춰 캠영상사이즈 재조정
+			// fixCamWidth = canvas.width*0.2;
+			// fixCamheight = canvas.height*0.25;
+		}
+	}
+	
+    var recorder; // globally accessible
+    
+    function startRecording(myStream) {
+
+	    recorder = RecordRTC(myStream, {
+	        type: 'video',
+	    });
+	    recorder.startRecording();
+	    recorder.stream = myStream;
+	}
+
+	function stopRecording() {
+	    recorder.stopRecording(stopRecordingCallback);	
+	}
+	
+	function addStreamStopListener(stream, callback) {
+	    stream.addEventListener('ended', function() {
+	        callback();
+	        callback = function() {};
+	    }, false);
+	    stream.addEventListener('inactive', function() {
+	        callback();
+	        callback = function() {};
+	    }, false);
+	    stream.getTracks().forEach(function(track) {
+	        track.addEventListener('ended', function() {
+	            callback();
+	            callback = function() {};
+	        }, false);
+	        track.addEventListener('inactive', function() {
+	            callback();
+	            callback = function() {};
+	        }, false);
+	    });
+	}
+	
+	function stopRecordingCallback() {
+	    //let video = document.getElementById("video");
+	    //video.muted = false;
+	    //video.volume = 1;
+	   
+	    //video.src = video.srcObject = null;
+	
+	    getSeekableBlob(recorder.getBlob(), function(seekableBlob) {	        	    	
+	    		    	
+	        //video.src = URL.createObjectURL(seekableBlob);	
+	        recorder.stream.stop();
+	        recorder.destroy();
+	        recorder = null;
+
+	        // 시간포멧적용
+			var today = new Date();
+			var year = today.getFullYear();
+			var month = ('0' + (today.getMonth() + 1)).slice(-2);
+			var day = ('0' + today.getDate()).slice(-2);
+			var dateString = '강의녹화 ' + year + '-' + month  + '-' + day + '.webm';
+
+
+	        invokeSaveAsDialog(seekableBlob, dateString); // webm
+	    });
+	}
+		
+	
+</script>
+	</body>
+</html>

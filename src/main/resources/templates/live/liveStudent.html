@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ko">
+	<head>
+		<meta content="text/html" charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, maximum-scale=1, minimum-scale=1, initial-scale=1, user-scalable=yes">
+		<meta name="Title" content="">
+		<meta name="Keywords" content="">
+		<meta name="Description" content="">
+		<title>모두의대치동</title>
+		<link rel="stylesheet" type="text/css" href="/common/css/common.css"/>
+		<link rel="stylesheet" type="text/css" href="/common/css/reset.css"/>
+		<link rel="stylesheet" type="text/css" href="/live/css/reset.css"/>
+		<link rel="stylesheet" type="text/css" href="/live/css/player.css"/>
+		<style>
+			/* 강의실 나가기 */
+            .exit_room_area {margin: 30px auto; text-align: center;}
+		</style>
+		<script type="text/javascript" src="https://www.bravecompany.net/js/jquery.min.js"></script>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/6.4.0/adapter.min.js" ></script>
+		<script type="text/javascript" src="/common/js/janus.js"></script>
+		<script type="text/javascript" src="/common/js/video.device.js"></script>
+		<script type="text/javascript" src="/common/js/security.js"></script>
+		<script type="text/javascript" src="/live/js/live_chat.js"></script>
+		<script type="text/javascript" src="/live/js/live_page_c.js"></script>
+		<script type="text/javascript" src="/live/js/live_page_p.js"></script>
+		<script type="text/javascript" src="/live/js/live_videoroom.js"></script>
+	</head>
+	<body style="-ms-overflow-y: hidden; overflow-y: hidden;">
+<!-- 스트리밍 플레이어 --> <!-- 학생ver -->
+<div class="modoo_player">
+	<!-- 플레이어 헤더 -->
+	<div class="player_header">
+		<div class="player_masthead">
+			<div class="masthead_left">
+				<h2><!--[주예진 수학 1강] 도함수 개념정리 라이브 제목 -->[[${title}]]</h2>
+			</div>
+			<div class="masthead_right">
+				<div class="masthead_time"><span id="time">오전 HH:MM</span></div><div class="masthead_state maincolor1"></div>
+			</div>
+		</div>
+	</div>
+	<!-- //플레이어 헤더 -->
+	<!-- 플레이어 영역 -->
+	<div class="player_container">
+		<input type="hidden" id="audio-input" value=""/>
+		<input type="hidden" id="video-source" value=""/>
+		<!-- 강의종료 캡션 -->
+		<div class="layout_popup_wrap" id="closeCaption" style="display:none;">			
+			<img src="/live/img/closeRoom.png" alt="closeRoom" style="width:100%; height: 100%;">			
+		</div>
+		<!-- 영상 -->
+		<section class="player_media">
+			<div class="media_container">
+				<iframe class="layout_popup_wrap" id="examScreen" src="/live/exam" style="width:100%; height: 100%; display: none;"></iframe>
+				<iframe class="layout_popup_wrap" id="optionScreen" src="/live/setting" style="width:100%; height: 100%;"></iframe>
+				<!-- 강의실나가기 팝업 -->
+				<div class="layout_popup_wrap" id="exitRoom" style="display: none;">
+					<div class="layout_popup pop_w396 pop_radius">
+						<div class="pop_wrap">
+							<div class="close"><a href="javascript:;" onclick="$('#exitRoom').hide();">팝업닫기</a></div>
+							<div class="contents_w">
+								<div class="pop_cont_wrap">
+									<div class="pop_title">강의실나가기</div>
+								</div>
+							</div>
+						</div>
+						<div class="pop_wrap">					
+							<div class="contents_w">
+								<div class="pop_cont_wrap">
+				                   	  <div class="exit_room_area">				                   	                  				                     		                           
+				                           <div class="btn_area">
+				                               <a href="javascript:;" onclick="window.open('','_self').close();" class="btn_basic2 radius2 active">나가기</a>
+				                               <a href="javascript:;" onclick="$('#exitRoom').hide();" class="btn_basic2 radius2" id="settingBtn">취소</a>
+				                           </div>																								                 				                 
+				               		 </div>
+				               </div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- //강의실나가기 팝업 -->
+				<!-- 입장 팝업 -->
+				<div class="layout_popup_wrap" id="enterinfo_pop" style="display: none;">
+					<div class="bg"></div>
+					<div class="layout_popup pop_w396 pop_radius">
+						<div class="pop_wrap">
+							<!--div class="close"><a href="javascript:;">팝업닫기</a></div-->
+							<div class="contents_w">
+								<div class="pop_cont_wrap">
+									<div class="pop_cont_in center">
+										<p class="tittxt1 mb30">라이브 강의실에 입장하였습니다<br></p>
+											<p class="subtxt3 mb30 left">
+											-캠화면은 다른 학생들에게는 보이지 않습니다<br>-캠화면에 얼굴이 잘 보이도록 각도를 조절해주세요<br>-마이크는 선생님에게 질문할 때만 활성화 됩니다
+											</p>
+										<div class="btn_area">
+											<a href="javascript:;" onclick="$('#enterinfo_pop').hide();" class="btn_basic3 radius active" id="enterAccept">확인</a>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- //입장 팝업 -->
+
+
+
+				<div class="media_surface">
+					<div class="surface">
+						<div class="surf_in" style="width: 100%; height: 100%;">
+							<!-- 라이브화면 -->
+							<div id="teacher_main" class="surf_rsl" style="width: 100%; height: 100%; padding-bottom: 0%;">
+								<img id="back_img" src="/live/img/background.png">
+								<div id="fullChatalert" onclick="closeFullScreen()" class="chat_alert" style="display: none; cursor:pointer;">
+									새로운 메시지가 <span>{n}</span>개 있습니다.
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- 질문학생 썸네일 -->
+					<div class="thumb_stdnt" style="display: none;">
+						<div id="hiddenWarp" style="display: none;"></div>
+						<div class="user_thumb big"><span><img id="stdnt_img" src="/live/img/test_img1.png"></span></div>
+						<div class="stdnt_nm"><span>이나은학생</span></div>
+					</div>
+
+					<!-- //질문학생 썸네일 -->
+				</div>
+				<div class="media_controller">
+					<div class="media_button">
+						<div class="button_left"></div>
+						<div class="button_center">
+							<!--  btn_feed 상태
+									btn_feed : 기본 상태 (쌤 질문있어요!),
+									btn_feed.active : 녹색라인 버튼, 질문중 상태 (질문중이에요),
+									btn_feed.on : 녹색 버튼, 질문대기 상태 (질문 대기중입니다, 이해했어요!),
+									btn_feed.pause : 빨간색 버튼 (이해가안돼요!, 화면공유 중지, 강의녹화 중지) 
+							-->
+							<div class="button"><a href="javascript:;" class="btn_feed" id="questionBtn"><div><i class="btn_ic type1"></i><span class="number maincolor2"></span></div>쌤 질문있어요!</a></div><!-- active(질문중), on(질문 대기중) -->
+							<div class="button"><a href="javascript:;" class="btn_feed" id="yesBtn"><div><i class="btn_ic type2"></i><span class="number maincolor1"></span></div>이해했어요!</a></div><!-- on -->
+							<div class="button"><a href="javascript:;" class="btn_feed" id="noBtn"><div><i class="btn_ic type3"></i><span class="number maincolor2"></span></div>이해가안돼요!</a></div><!-- pause -->
+						</div>
+						<div class="button_right">
+							<div id="getResolutionH" class="">0p</div>
+							<!-- 설정더보기 버튼(클릭 시 설정 팝업 노출) -->
+							<div class="button"><a href="javascript:;" class="btn_more"><div><i>더보기</i></div></a></div>
+							<!-- //설정더보기 버튼(클릭 시 설정 팝업 노출) -->
+						</div>
+					</div>
+					<!-- 설정 팝업 -->
+					<div class="pop_layer_wrap player_setlist" style="display: none;">
+						<div class="pop_layer_area">
+							<div class="layer_in">
+								<ul>
+									<li id="fullScreen"><a href="javascript:;"><i class="type1"></i><div><p class="tit">전체화면</p></div></a></li>
+									<li id="normalScreen" style="display: none;"><a href="javascript:;"><i class="type2"></i><div><p class="tit">전체화면 종료</p></div></a></li>
+									<li onclick="exitRoom();"><a href="javascript:;"><i class="type8"></i><div><p class="tit">강의실 나가기</p></div></a></li>
+									<li><a href="javascript:;" id="option"><i class="type9"></i><div><p class="tit" id="optionBtn">설정</p></div></a></li>
+								</ul>
+							</div>
+						</div>
+					</div>
+					<!-- //설정 팝업 -->
+					<!-- 타이머 팝업 -->
+					<div class="pop_layer_wrap player_timer">
+						<div class="pop_layer_area">
+							<div class="layer_in">
+								<div class="pop_timer">
+									<div class="timer_area" id="playerTimer">00:00:00</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- //타이머 팝업 -->
+				</div>
+			</div>
+		</section>
+		<!-- //영상 -->
+		<!-- 보드 -->
+		<section class="player_board">
+			<div class="board_container">
+				<!-- 서브영상 -->
+				<div class="thumb_container">
+					<div class="thumb_zip">						
+						<!-- 영상1(학생화면) -->
+						<div class="thumb active surface state"><!-- thumb.active : 질문중 -->
+							<div class="surf_in"><div class="surf_rsl">
+								<!--<img src="/live/img/test_img2.png" alt="학생화면"> 화면 -->
+								<video id="video_cam" class="video-js vjs-default-skin video" playsinline autoplay muted style="display: none;"></video>
+							</div></div>
+							<div class="surf_state">
+								<!--  warn 경고 상태
+										warn.w1 : 경고 1회,
+										warn.w2 : 경고 2회,
+										warn.w3 : 경고 3회,
+								-->
+								<div class="surf_name" id="userName"><!-- 김용감 --><!--<i class="warn w1">경고</i>--></div>
+								<div class="surf_feed">
+									<!--<span><a href="javascript:;" class="btn_basic radius type2">질문중이에요</a></span>-->
+								</div>
+							</div>
+						</div>
+						<!-- //영상1(학생화면) -->
+						<div id="teacherCam" class="thumb surface state" style="display: none;">
+							<div class="surf_in">
+								<div id="teacher_cam" class="surf_rsl"><!-- 화면 --></div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- //서브영상 -->
+				<!-- 채팅 -->
+				<div class="chat_container">
+					<div class="chat_head">
+						<div class="chat_head_in"><span>채팅</span></div>
+					</div>
+					<div class="chat_board">
+						<div class="chat_scroll">
+							<div class="chat_scroll_in" id="chat"></div>
+						</div>
+						<div class="chat_input">
+							<div class="chat_input_in">
+								<div class="input_txt">
+									<form>
+										<!-- <textarea name="comment" placeholder="궁금한 점을 물어보세요" style="height: 34px;" id="comment" onKeyDown="pressEnter()"></textarea> -->
+										<textarea id="chatMsg" name="comment" placeholder="궁금한 점을 물어보세요" style="height: 34px;"></textarea>
+									</form>
+								</div>
+								<div class="input_btn">
+									<div class="input_default">
+										<a href="javascript:;" class="btn_attach" onclick="fileUpload('UF')">파일첨부</a>
+										<form action="fileUpload" id="uploadForm" method="post" target="iframe1" enctype="multipart/form-data">
+											<input type="file" name="file" id="file" style="display:none"/>
+											<input type="hidden" name="roomNo" id="roomNo" style="display:none"/>
+											<input type="hidden" name="seq" id="seq" style="display:none"/>
+										</form>
+										<iframe id="iframe1" name="iframe1" style="display:none"></iframe>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- //채팅 -->
+			</div>
+		</section>
+		<!-- //보드 -->
+	</div>
+	<!-- //플레이어 영역 -->
+</div>
+<iframe id="fileDown" name="fileDown" style='visibility:hidden' src="" width="1" height="1"></iframe>
+<script type="text/javascript">
+	SERVER_URL = '[[${mediaUrl}]]';
+	CHAT_URL = '[[${chatUrl}]]';
+	roomNo = parseInt('[[${liveCode}]]');
+	userId = '[[${userId}]]';
+	userNick = '[[${userNick}]]';
+	userLevel = '[[${userLevel}]]';
+	managerId = '[[${managerId}]]';
+	title = '[[${title}]]';
+	startTime = '[[${startTime}]]';
+	endTime = '[[${endTime}]]';
+	maxMemCnt = parseInt('[[${maxPeople}]]');
+	first = false;
+	// studentDto
+	seatNum = parseInt('[[${seatNum}]]');
+	warningCount = '[[${warningCount}]]';
+	warningReason = '[[${warningReason}]]';
+	questionStatus = '[[${questionStatus}]]';
+	questionSeq = '[[${questionSeq}]]';
+	tokenStatus = '[[${tokenStatus}]]';
+	enterTime = '[[${enterTime}]]';
+	exitTime = '[[${exitTime}]]';
+	userIdx =  '[[${userIdx}]]';
+	tokenUserType = '[[${tokenUserType}]]';
+	mediaControlUrl = '[[${mediaControlUrl}]]';
+	
+	lectureData = JSON.parse(htmlDecode('[[${lectureData}]]')); // 강의정보
+	studentList = JSON.parse(htmlDecode('[[${studentList}]]'));
+	LMS_URL = '[[${modoodaechiUrl}]]';
+
+	// 우측 상단 시간 표시
+	$(function(){
+		showNowTime();
+		setTimeout(() => {  showTimeInterval(); }, renewalSeconds*1000);
+		// 우측하단 화질 표시
+		resolutionDisplay();
+	});
+	
+	document.onkeydown = function ( event ) {
+		let fullScreenCheck = $('.player_container').hasClass('fullscreen');
+		if ( event.keyCode == 27 && fullScreenCheck) {  // esc
+ 			closeFullScreen();
+	    }
+	}
+	
+	//msg 키 이벤트
+	chatMsg.onkeyup = function(){
+	    if (event.keyCode === 13 && event.shiftKey) {		  
+	        submitMessage("U");  // 실행할 이벤트
+	        return false;
+	    } else {
+	        // 메세지 창 엔터 EVENT
+	        if (event.keyCode === 13){
+	        	submitMessage("U");  // 실행할 이벤트
+	            return false;
+	        }
+	    }
+	};
+	
+	function userNickSet() {
+		$("#optionScreen").contents().find('#userNick').val(userNick);
+		$("#optionScreen").contents().find('#title').val(title);
+		$("#optionScreen").contents().find('#startTime').val(startTime);
+		$("#optionScreen").contents().find('#endTime').val(endTime);
+		$("#optionScreen").contents().find('#tokenUserType').val(tokenUserType);
+		$("#optionScreen").contents().find('#roomNo').val(roomNo);
+		$("#optionScreen").contents().find('#userId').val(userId);
+		$("#optionScreen").contents().find('#managerId').val(managerId);
+		$("#optionScreen").contents().find('#userLevel').val(userLevel);
+	}
+	//iframeSet();	
+	//설정더보기 
+    var set = 1;
+    $(".btn_more").click(function(){
+        if(set==1){
+            $(".player_setlist").show();
+            $(".player_setlist").addClass('on');
+			$(this).addClass('on');
+            set--;
+        }else{
+            $(".player_setlist").hide();
+            $(".player_setlist").removeClass('on');
+			$(this).removeClass('on');
+            set++;
+        }
+    });
+
+	// 설정더보기 외 클릭시 설정더보기 숨기기
+	$("html").click(function(e){
+		if($(".player_setlist").hasClass('on')){
+			if (!$(".btn_more").is(e.target) && $(".btn_more").has(e.target).length === 0){
+				$(".player_setlist").hide();
+				$(".player_setlist").removeClass('on');
+				$(this).removeClass('on');
+				set++;
+			}
+		}
+	});
+	
+	$("#questionBtn").click(function(){
+		// 캠이 나오지 않아도 기능 작동할 수 있도록 주석 2021-07-21
+		if (userLevel == "2001") {
+			if (CamOperConfirm('question'))
+				return;
+		}
+		if(QPossibleYN){
+			$("#questionBtn").toggleClass('on');
+			$("#questionBtn").addClass(userId);
+			if($("#questionBtn").hasClass('on')){
+				$("#questionBtn").html('<div><i class="btn_ic type1"></i></div>질문 대기중입니다.');
+				questionSend();	//강사화면에 질문수락버튼
+				clearTimeout(QCoolTimer);
+			}else{
+				$("#questionBtn").html('<div><i class="btn_ic type1"></i><span class="number maincolor2"></span></div>쌤 질문있어요!');
+				questionCancel(); //강사화면에 질문수락버튼 삭제
+				QuestionCoolTime();
+			}
+		}
+    });
+
+	$("#yesBtn").click(function(){
+		// 캠이 나오지 않아도 기능 작동할 수 있도록 주석 2021-07-21
+		// if(CamOperConfirm())
+		// 	return;
+		if(!$("#yesBtn").hasClass("on")) {
+			if($("#noBtn").hasClass("pause")) {
+				removeMisunderstandCount();
+				$("#noBtn").removeClass("pause");
+				clearTimeout(noTimeout);
+			}
+			$("#yesBtn").toggleClass('on');
+			addUnderstandCount();
+			yesTimeout = setTimeout(function(){
+				removeUnderstandCount();
+				$("#yesBtn").removeClass("on");
+			},15000); // 부하테스트때 15초 <-> 5분 변경
+		}
+	});
+	
+	$("#noBtn").click(function(){
+		// 캠이 나오지 않아도 기능 작동할 수 있도록 주석 2021-07-21
+		// if(CamOperConfirm())
+		// 	return;
+		if(!$("#noBtn").hasClass("pause")) {
+			if($("#yesBtn").hasClass("on")) {
+				removeUnderstandCount();
+				$("#yesBtn").removeClass("on");
+				clearTimeout(yesTimeout);
+			}
+			$("#noBtn").toggleClass('pause');
+			addMisunderstandCount();
+			noTimeout = setTimeout(function(){
+				removeMisunderstandCount();
+				$("#noBtn").removeClass("pause");
+			},15000); // 부하테스트때 15초 <-> 5분 변경
+		}
+    });
+
+	$("#option").click(function(){
+		$("#optionScreen").show();
+		const childSetting = document.getElementById("optionScreen").contentWindow;
+		earlySetting = true;
+		childSetting.setStart();
+	});
+	// 전체화면
+	$("#fullScreen").click(function(){
+		fullscrenFlag = true;
+		fullscrenChatCnt = 0;
+		// document.documentElement.webkitRequestFullscreen();
+		$('.media_controller').wrap('<div class="media_controller_box"></div>');
+		$(".media_controller_box").hover(function(){
+			$(".media_controller").css('bottom','0');
+			$(".thumb_stdnt").css('bottom','136px');
+		},function(){
+			$(".media_controller").css('bottom','-100px');
+			$(".thumb_stdnt").css('bottom','46px');
+		});
+		$('.media_container').css('position','unset');
+		$('.player_header').hide();
+		$('.player_board').hide();
+		$('.player_container').addClass('fullscreen');		
+		if($("video").hasClass(managerId+"_screen") == true){
+			$("."+ managerId +"_screen").css('object-fit','fill');
+		}
+		$("#fullScreen").hide();
+		$("#normalScreen").show();
+		
+	});
+
+	// 하단 메뉴바
+	// $(".media_controller_box").hover(function(){
+	// 	$(".media_controller").css('bottom','0');
+	// 	$(".thumb_stdnt").css('bottom','136px');
+	// },function(){
+	// 	$(".media_controller").css('bottom','-100px');
+	// 	$(".thumb_stdnt").css('bottom','46px');
+	// });
+	
+	$("#normalScreen").click(function(){
+		// $('.media_controller').unwrap();
+		closeFullScreen();
+	});
+	
+	function closeFullScreen() {
+		$('.media_controller').unwrap();
+		$(".media_controller").css('bottom','0');
+		$(".thumb_stdnt").css('bottom','136px');
+		fullscrenFlag = false;
+		fullscrenChatCnt = 0;
+		$("#fullChatalert").css('display','none');
+		// document.exitFullscreen();
+		$('.media_container').css('position','relative');
+		$('.player_header').show();
+		$('.player_board').show();
+		$( '.player_container ').removeClass('fullscreen');
+		$("#fullScreen").show();
+		$("#normalScreen").hide();
+	}
+		
+</script>
+<!-- //스트리밍 플레이어 -->
+	</body>
+</html>

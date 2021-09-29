@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko">
+	<head>
+		<meta content="text/html" charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, maximum-scale=1, minimum-scale=1, initial-scale=1, user-scalable=yes">
+		<meta name="Title" content="">
+		<meta name="Keywords" content="">
+		<meta name="Description" content="">
+		<title>모두의대치동</title>
+		<script type="text/javascript" src="https://www.bravecompany.net/js/jquery.min.js"></script>
+		<script type="text/javascript" src="/live/js/live_page_c.js"></script>
+	</head>
+	<body>
+	<!-- 전달을 위한 FORM -->
+	<form id="postGateFrm" name="postGateFrm" method="post" action="/live/videoroom">
+		<input type="hidden" id="userLevel"  name="userLevel"	/>
+		<input type="hidden" id="onairIdx"  name="onairIdx"	/>
+		<input type="hidden" id="userKey"  name="userKey"	/>
+		<input type="hidden" id="tokenUserType"  name="tokenUserType"	/>
+		<input type="hidden" id="onairType"  name="onairType"	/>
+	</form>
+	<!-- //전달을 위한 FORM -->
+	
+	<script type="text/javascript">
+		$(document).ready(function () {
+			const userLevel		= '[[${userLevel}]]';
+			const onairIdx		= '[[${onairIdx}]]';
+			const userKey		= '[[${userKey}]]';
+			const tokenUserType	= '[[${tokenUserType}]]';
+			const onairType		= '[[${onairType}]]';
+			const onAirCheck    = '[[${onAirCheck}]]';
+
+			if(!isNull(onAirCheck) && onAirCheck == 'close') {				
+				/* alert("방송이 종료되었습니다."); */		
+				$("#closeCaption").show();
+				/* window.close(); */
+			} else if (!isNull(tokenUserType)) {
+				$("#userLevel").val('[[${userLevel}]]');
+				$("#onairIdx").val('[[${onairIdx}]]');
+				$("#userKey").val('[[${userKey}]]');
+				$("#tokenUserType").val('[[${tokenUserType}]]');
+				$("#onairType").val('[[${onairType}]]');
+				
+				$("#postGateFrm").submit();
+			} else {
+				alert("Token정보가 유효하지 않습니다.");
+				window.close();
+			}
+		});
+	</script>
+	<div id="closeCaption" style="display:none;">			
+			<img src="/live/img/closeRoom.png" alt="closeRoom" style="width:100vw; height: 100vh;">			
+	</div>
+	
+	</body>
+</html>

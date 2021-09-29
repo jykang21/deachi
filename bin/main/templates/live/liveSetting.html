@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ko">
+	<head>
+		<meta content="text/html" charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, maximum-scale=1, minimum-scale=1, initial-scale=1, user-scalable=yes">
+		<meta name="Title" content="">
+		<meta name="Keywords" content="">
+		<meta name="Description" content="">
+		<title>모두의대치동</title>
+		<link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
+<!--		<link rel="shortcut icon" href="/live/img/player/favicon.ico" type="image/x-icon">-->
+		<link rel="stylesheet" type="text/css" href="/common/css/common.css"/>
+		<link rel="stylesheet" type="text/css" href="/common/css/reset.css"/>
+		<link rel="stylesheet" type="text/css" href="/live/css/reset.css"/>
+        <style>
+            .player_enter_area {margin: 80px auto; text-align: center;}
+            .player_enter_surface {width: 438px; margin: 40px auto; border-radius: 10px; overflow: hidden;}
+            .player_enter_surface:before {content: '카메라가 꺼져 있음'; display: block; position: absolute; left: 0; top: 0; width: 100%; height: 100%; font-size: 18px; line-height: 246px; font-weight: 400; color: #fff; text-align: center; background: #222;}
+            .player_enter_surface.surface .surf_rsl {background: none;}
+        </style>
+		<script type="text/javascript" src="https://www.bravecompany.net/js/jquery.min.js"></script>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/6.4.0/adapter.min.js" ></script>
+		<script type="text/javascript" src="/common/js/video.device.js"></script>
+		<script type="text/javascript" src="/common/js/volume-meter.js"></script>
+		<script type="text/javascript" src="/common/js/security.js"></script>
+		<script type="text/javascript" src="/live/js/live_page_c.js"></script>
+		<script type="text/javascript" src="/live/js/live_page_p.js"></script>
+		<script type="text/javascript" src="/live/js/live_setting.js"></script>
+	</head>
+	<body>
+		<div class="layout_popup_wrap">
+			<div class="bg"></div>
+			<div class="layout_popup pop_w580 pop_radius">
+				<div class="pop_wrap" id="playerEnter">
+					<div class="close" id="layoutClose"><a href="javascript:;">팝업닫기</a></div>
+					<div class="contents_w">
+						<div class="pop_cont_wrap">
+		                   <!-- 수강대기 -->
+		                   <div class="player_enter_wrap">
+		                       <div class="player_enter_area">
+		                           <p class="subtxt1" id="subtxt1">님, 공부할 준비가 되었나요?<!-- 강사화면 문구 : 강사이름님, 강의할 준비가 되었나요? --></p>
+		                           <h3 class="tittxt1 mt30" id="tittxt1">[주예진 수학 1강] 도함수 개념정리<!-- 강의명 --></h3>
+		                           <div class="subtxt2 mt10" id="subtxt2"><b>강의 스케쥴 : </b>2021.01.02 12:00-13:00 <!-- 강의 시간 --></div>
+		                           <div class="player_enter_surface surface">
+		                               <div class="surf_in"><div class="surf_rsl"><video id="videoEnter" autoplay muted></video><!-- 화면 --></div></div>
+		                           </div>
+		                           <div class="btn_area">
+		                               <a href="javascript:;" class="btn_basic2 radius2 active" id="enterBtn">입장하기</a>
+		                               <a href="javascript:;" class="btn_basic2 radius2" id="settingBtn">설정</a>
+		                           </div>
+								<br>
+								<a href="https://www.notion.so/bravecompany/4c641ee5c0004d8daac35387c8f114af" style ="color: #999999; text-decoration: underline;" target="_blank">'카메라가 꺼져 있음' 현상 해결</a>
+								   <p style ="color: #999999;" target="_blank">(카메라 오류가 있으면 질의응답이 불가능합니다)</p>
+
+		                       </div>
+		                   </div>
+		                   <!-- //수강대기 -->
+		               </div>
+					</div>
+				</div>
+				<div class="pop_wrap" style="display: none;" id="playerSetting">
+					<!--div class="close"><a href="javascript:;">팝업닫기</a></div-->
+					<div class="contents_w">
+						<div class="pop_cont_wrap">
+							<div class="pop_title">설정
+								<div class="btn_area">
+									<a href="javascript:;" class="btn_basic3 radius" id="close">취소</a>
+									<a href="javascript:;" class="btn_basic3 radius active" id="commit">적용</a>
+								</div>
+							</div>
+							<div class="pop_cont_in">
+								<dl class="setlist_area">
+									<dt>스피커</dt>
+									<dd>
+										<div class="input_area">
+											<div class="input_box">
+												<select name="spk_type" class="select1" id="audio-output" style="width: 370px;"></select>
+											</div>
+											<a href="javascript:;" class="btn_basic3 type2 radius" id="audio-output-test">스피커 테스트</a>
+										</div>
+										<div class="input_area left mt20">
+											<span class="tit" style="width: 110px;">출력 레벨:</span>
+											<div class="input_box levelchk">
+												<input type="checkbox" class="outlv" id="outlv1" value="1" disabled="disabled">
+												<label for="lv1"></label>
+												<input type="checkbox" class="outlv" id="outlv2" value="2" disabled="disabled">
+												<label for="lv2"></label>
+												<input type="checkbox" class="outlv" id="outlv3" value="3" disabled="disabled">
+												<label for="lv3"></label>
+												<input type="checkbox" class="outlv" id="outlv4" value="4" disabled="disabled">
+												<label for="lv4"></label>
+												<input type="checkbox" class="outlv" id="outlv5" value="5" disabled="disabled">
+												<label for="lv5"></label>
+												<input type="checkbox" class="outlv" id="outlv6" value="6" disabled="disabled">
+												<label for="lv6"></label>
+												<input type="checkbox" class="outlv" id="outlv7" value="7" disabled="disabled">
+												<label for="lv7"></label>
+												<input type="checkbox" class="outlv" id="outlv8" value="8" disabled="disabled">
+												<label for="lv8"></label>
+												<input type="checkbox" class="outlv" id="outlv9" value="9" disabled="disabled">
+												<label for="lv9"></label>
+												<input type="checkbox" class="outlv" id="outlv10" value="10" disabled="disabled">
+												<label for="lv10"></label>
+											</div>
+										</div>
+										<div class="input_area left mt20">
+											<span class="tit" style="width: 110px;">출력 볼륨:</span>
+											<div class="input_box range">
+												<input type="range" id="outVol" name="ages" min="0" max="100" step="1" style="width: 300px;" onchange="audioOutVol()" disabled="disabled">
+											</div>
+										</div><!---->
+									</dd>
+								</dl>
+								<dl class="setlist_area">
+									<dt>마이크</dt>
+									<dd>
+										<div class="input_area">
+											<div class="input_box">
+												<select name="mic_type" class="select1" id="audio-input" style="width: 370px;"></select>
+											</div>
+											<a href="javascript:;" class="btn_basic3 type2 radius" id="audio-input-test">마이크 테스트</a>
+										</div>
+										<div class="input_area left mt20">
+											<span class="tit" style="width: 110px;">입력 레벨:</span>
+											<div class="input_box levelchk">
+												<input type="checkbox" class="inlv" id="inlv1" value="1"  disabled="disabled">
+												<label for="lv1"></label>
+												<input type="checkbox" class="inlv" id="inlv2" value="2"  disabled="disabled">
+												<label for="lv2"></label>
+												<input type="checkbox" class="inlv" id="inlv3" value="3"  disabled="disabled">
+												<label for="lv3"></label>
+												<input type="checkbox" class="inlv" id="inlv4" value="4"  disabled="disabled">
+												<label for="lv4"></label>
+												<input type="checkbox" class="inlv" id="inlv5" value="5"  disabled="disabled">
+												<label for="lv5"></label>
+												<input type="checkbox" class="inlv" id="inlv6" value="6"  disabled="disabled">
+												<label for="lv6"></label>
+												<input type="checkbox" class="inlv" id="inlv7" value="7"  disabled="disabled">
+												<label for="lv7"></label>
+												<input type="checkbox" class="inlv" id="inlv8" value="8"  disabled="disabled">
+												<label for="lv8"></label>
+												<input type="checkbox" class="inlv" id="inlv9" value="9"  disabled="disabled">
+												<label for="lv9"></label>
+												<input type="checkbox" class="inlv" id="inlv10" value="10"  disabled="disabled">
+												<label for="lv10"></label>
+											</div>
+										</div>
+										<!--div class="input_area left mt20">
+											<span class="tit" style="width: 110px;">입력 볼륨:</span>
+											<div class="input_box range">
+												<input type="range" id="a" name="ages" min="0" max="100" step="100" style="width: 300px;">
+											</div>
+										</div-->
+									</dd>
+								</dl>
+								<dl class="setlist_area">
+									<dt>카메라</dt>
+									<dd>
+										<div class="input_area">
+											<div class="input_box">
+												<select name="cam_type" class="select1" id="video-source" style="width: 370px;"></select>
+												<div class="chk_box mt15">
+													<input type="checkbox" name="cam_rev" id="rev1">
+													<label for="rev1"><span>내 화면 좌우 반전</span></label>
+												</div>
+											</div>
+											<div class="surface radius" style="width: 140px;">
+												<div class="surf_in"><div class="surf_rsl" id="videolocal">
+													<!--img src="/live/img/test_img2.png" alt="학생화면"--><!-- 화면 -->
+													<video id="videoSetting" autoplay muted></video>
+												</div></div>
+											</div>
+										</div>
+									</dd>
+								</dl>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<input type="hidden" id="userNick" value="" />
+		<input type="hidden" id="title" value="" />
+		<input type="hidden" id="startTime" value="" />
+		<input type="hidden" id="endTime" value="" />
+		<input type="hidden" id="tokenUserType" value="" />
+		<input type="hidden" id="roomNo" value="" />
+		<input type="hidden" id="userId" value="" />
+		<input type="hidden" id="managerId" value="" />
+		<input type="hidden" id="userLevel" value="" />
+		<script type="text/javascript">
+			//팝업 반투명
+			$("body, html").css('background', 'none');
+			
+			iframeStudentSet();
+			
+			if(tokenUserType == '0' || tokenUserType == '1'){
+				/* lectureData.lectureTitle */
+				$("#subtxt1").text(userNick+"님, 안녕하세요!");
+			} else {
+				$("#subtxt1").text(userNick+"님, 공부할 준비가 되었나요?");
+			}
+			$("#tittxt1").text(title);
+			let startYear = startTime.substr(0,4);
+			let startMonth = startTime.substr(5,2);
+			let startDay = startTime.substr(8,2);
+			let startHour = startTime.substr(10,3);
+			let startMinute = startTime.substr(13,3);
+			
+			let endYear = endTime.substr(0,4);
+			let endMonth = endTime.substr(5,2);
+			let endDay = endTime.substr(8,2); 
+			let endHour = endTime.substr(10,3);
+			let endMinute = endTime.substr(13,3);
+			if(startTime.substr(0,10) == endTime.substr(0,10)) {
+				$("#subtxt2").text("강의 스케쥴 : " + startYear + "." + startMonth + "." + startDay + " " + startHour + startMinute + " ~ "+ endHour + endMinute);	
+			}else{
+				$("#subtxt2").text("강의 스케쥴 : " + startYear + "." + startMonth + "." + startDay + " " + startHour + startMinute + 
+												" ~ "+ endYear + "." + endMonth + "." + endDay + " "+ endHour + endMinute);	
+			}
+			
+				
+		$(function() {
+			audioInputSelect.onchange = setStart;
+			audioOutputSelect.onchange = changeAudioDestination;
+			videoSelect.onchange = setStart;
+			if((localStorage.getItem("videoRev")==="true")){
+				videoEnter.style.transform = "scaleX(-1)";
+				videoSetting.style.transform = "scaleX(-1)";
+			}else{
+				videoEnter.style.transform = "";
+				videoSetting.style.transform = "";
+			}
+		});// document onload
+		$(document).ready(function () {
+			$('#layoutClose').click(function(){
+				window.parent.postMessage({
+				    'type': 'settingClose'
+				}, '*');
+			});
+		});
+		</script>
+		<!-- //플레이어 설정 팝업 -->
+	</body>
+</html>

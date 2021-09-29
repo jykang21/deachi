@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ko">
+	<head>
+		<meta content="text/html" charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, maximum-scale=1, minimum-scale=1, initial-scale=1, user-scalable=yes">
+		<meta name="Title" content="">
+		<meta name="Keywords" content="">
+		<meta name="Description" content="">
+		<title>모두의대치동</title>
+		<link rel="stylesheet" type="text/css" href="/common/css/reset.css"/>
+		<link rel="stylesheet" type="text/css" href="/live/css/reset.css"/>
+		<link rel="stylesheet" type="text/css" href="/common/css/common.css"/>
+
+		<script type="text/javascript" src="https://www.bravecompany.net/js/jquery.min.js"></script>
+	</head>
+	<body>
+<!-- 시험 팝업 -->
+<style>
+	.pop_exam_wrap i.submit {display: block; width:60px; height:60px; margin: 0 auto 30px; overflow: hidden; background:url('/common/img/icon/icon_asset.png') no-repeat; background-size: 300px auto; background-position: -116px -55px;}
+
+	.pop_exam_step2 {padding: 60px 0;}
+	.pop_exam_step3 {width: 492px; margin: 0 auto; padding: 30px 0 0 0;}
+	/* step1 */
+	.pop_exam_col:after {content: ''; display: block; clear: both;}
+	.exam_col {float:left; padding: 0 20px;}
+	.exam_col.q_col {width: 750px; border-right: 1px solid #ddd;}
+	.exam_col.a_col {width: 268px;}
+	.exam_col .exam_tit {padding: 16px 0; font-size: 19px; line-height: 28px; font-weight: 700; color: #333; text-align: left;}
+	.exam_q_sheet {height: 598px; overflow-y: auto; background: #f0f0f0;}
+	.exam_submit {display: flex; -webkit-box-pack: justify; justify-content: space-between; -webkit-box-align: center; align-items: center; margin-bottom: 10px;}
+	.exam_submit .time {flex: 1; font-size: 13px; line-height: 19px; font-weight: 400; color: #00704a; text-align: left;}
+	.exam_submit .time:before {content: ''; display: inline-block; vertical-align: middle; width: 24px; height: 24px; margin-right: 8px; overflow: hidden; background:url('/common/img/icon/icon_asset.png') no-repeat; background-size: 300px auto; background-position: -276px -13px;}
+	.a_sheet_scroll {height: 549px; overflow-y: auto;}
+	.a_sheet_scroll ul {padding-bottom: 20px;}
+	.a_sheet_scroll ul li {display: flex; margin-top: 9px;}
+	.a_sheet_scroll ul li:first-child {margin-top: 0;}
+	.a_sheet_scroll ul li > span {flex-grow: 1;}
+	.a_sheet_scroll ul li .num {flex-grow: 0; flex-shrink: 0; width: 28px; font-size: 13px; line-height: 39px; font-weight: 400; color: #666; text-align: left;}
+	/* step3 */
+	.exam_result {display: flex; -webkit-box-pack: center; justify-content: center; -webkit-box-align: center; align-items: center;}
+	.exam_result > * {float: left; margin: 0 5px;}
+	.exam_result .score, .exam_result .score .my {font-size: 34px; line-height: 50px; font-weight: 700; color: #aaa;}
+	.exam_rate {margin-top: 20px; padding: 15px; background: #f5f5f5;}
+	.exam_rate ul {display: flex; -webkit-box-pack: center; justify-content: center; -webkit-box-align: center; align-items: center;}
+	.exam_rate ul li {margin: 0 10px;}
+	.exam_rate ul li, .exam_rate ul li span {font-size: 14px; line-height: 20px; font-weight: 400; color: #333;}
+	.exam_rate ul li b {font-weight: 700; margin-right: 5px;}
+	.exam_answer {margin: 30px auto 0; overflow-y: auto; height: 294px;}
+	.exam_answer ul {border-top: 1px solid #ddd; margin-bottom: 30px;}
+	.exam_answer ul li {border-bottom: 1px solid #ddd;}
+	.exam_answer .result {display: flex; -webkit-box-pack: justify; justify-content: space-between; -webkit-box-align: center; align-items: center; padding: 10px 20px;}
+	.exam_answer .result * {font-size: 12px; line-height: 18px; font-weight: 400; color: #666;}
+	.exam_answer .result .sheet {flex: 1; box-pack: start; -webkit-box-pack: start; justify-content: flex-start; -webkit-box-align: center; box-align: center; align-items: center; display: flex; overflow: hidden; text-align: left; text-overflow: ellipsis; font-size: 13px; line-height: 19px; font-weight: 400; color: #111;}
+	.exam_answer .result .num {display: inline-block; position: relative; min-width: 32px; margin-right: 6px; font-size: 13px; line-height: 30px; font-weight: 400; color: #666; text-align: center;}
+	.exam_answer .correct .result .num:before {content: ''; display: block; position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: hidden; background:url('/common/img/icon/icon_grade.png') no-repeat; background-size: 60px auto; background-position: 0 0;}
+	.exam_answer .wrong .result .num:before {content: ''; display: block; position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: hidden; background:url('/common/img/icon/icon_grade.png') no-repeat; background-size: 60px auto; background-position: -32px 0;}
+	.exam_answer .result .answer {flex: 1; box-pack: end; -webkit-box-pack: end; justify-content: flex-end; -webkit-box-align: center; box-align: center; align-items: center; text-align: right;}
+	.exam_answer .result .ok {margin-right: 10px;}
+</style>
+<div class="layout_popup_wrap">
+	<div class="bg"></div>
+	<!-- 1. 시험 -->
+	<div class="layout_popup pop_w1020 pop_radius">
+		<div class="pop_wrap">
+			<div class="close"><a href="javascript:;">팝업닫기</a></div>
+			<div class="contents_w">
+				<div class="pop_cont_wrap">
+					<div class="pop_exam_wrap">
+						<div class="pop_exam_step1">
+							<div class="pop_exam_col">
+								<div class="exam_col q_col">
+									<div class="exam_tit">1강 도함수 개념정리 테스트<!-- 시험명 --></div>
+									<div class="exam_q_sheet">
+										<div><!-- 시험지 영역 --></div>
+									</div>
+								</div>
+								<div class="exam_col a_col">
+									<div class="exam_tit">답안지</div>
+									<div class="exam_a_sheet">
+										<div class="exam_submit">
+											<div class="time" id="examSend">남은시간 00:29:34</div><!-- 남은시간 카운트 -->
+											<div class="btn"><a href="javascript:;" class="btn_basic3 radius active">제출하기</a></div>
+										</div>
+										<div class="a_sheet_scroll">
+											<ul>
+												<li>
+													<span class="num">1</span>
+													<span><input type="text" name="a_sheet" placeholder="입력해주세요"></span>
+												</li>
+												<li>
+													<span class="num">2</span>
+													<span><input type="text" name="a_sheet" placeholder="입력해주세요"></span>
+												</li>
+												<li>
+													<span class="num">3</span>
+													<span><input type="text" name="a_sheet" placeholder="입력해주세요"></span>
+												</li>
+												<li>
+													<span class="num">4</span>
+													<span><input type="text" name="a_sheet" placeholder="입력해주세요"></span>
+												</li>
+												<li>
+													<span class="num">5</span>
+													<span><input type="text" name="a_sheet" placeholder="입력해주세요"></span>
+												</li>
+												<li>
+													<span class="num">6</span>
+													<span><input type="text" name="a_sheet" placeholder="입력해주세요"></span>
+												</li>
+												<li>
+													<span class="num">7</span>
+													<span><input type="text" name="a_sheet" placeholder="입력해주세요"></span>
+												</li>
+												<li>
+													<span class="num">8</span>
+													<span><input type="text" name="a_sheet" placeholder="입력해주세요"></span>
+												</li>
+												<li>
+													<span class="num">9</span>
+													<span><input type="text" name="a_sheet" placeholder="입력해주세요"></span>
+												</li>
+												<li>
+													<span class="num">10</span>
+													<span><input type="text" name="a_sheet" placeholder="입력해주세요"></span>
+												</li>
+											</ul>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- //1. 시험 -->
+
+	<!-- 2. 시험결과대기 -->
+	<div class="layout_popup pop_w610 pop_radius" style="display: none;">
+		<div class="pop_wrap">
+			<!--div class="close"><a href="javascript:;">팝업닫기</a></div-->
+			<div class="contents_w">
+				<div class="pop_cont_wrap">
+					<div class="pop_cont_in center">
+						<div class="pop_exam_wrap">
+							<div class="pop_exam_step2">
+								<i class="submit"></i>
+								<h3 class="tittxt1">1강 도함수 개념정리 테스트<!-- 시험명 --></h3>
+								<p class="tittxt1 maincolor1 mt10">답안지가 성공적으로 제출되었습니다</p>
+								<p class="subtxt3 mt30">시험종료까지 <span class="subtxt3 time">HH:MM:SS<!-- 남은시간 --></span> 남았습니다<br>시험이 종료되면 결과페이지로 이동합니다</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- //2. 시험결과대기 -->
+
+	<!-- 3. 시험결과 -->
+	<div class="layout_popup pop_w610 pop_radius" style="display: none;">
+		<div class="pop_wrap">
+			<div class="close"><a href="javascript:;">팝업닫기</a></div>
+			<div class="contents_w">
+				<div class="pop_cont_wrap">
+					<div class="pop_cont_in center" style="padding-bottom: 0;">
+						<div class="pop_exam_wrap">
+							<div class="pop_exam_step3">
+								<h3 class="tittxt1 mb20">1강 도함수 개념정리 테스트<!-- 시험명 --></h3>
+								<!-- 통과한 경우(교차노출) -->
+								<div class="exam_result">
+									<div><span class="icon_round on">통과</span></div>
+									<div class="score"><span class="my maincolor1">80점</span>&nbsp;/&nbsp;100점</div>
+								</div>
+								<!-- //통과한 경우(교차노출) -->
+								<!-- 떨어진 경우(교차노출) ->
+								<div class="exam_result">
+									<div><span class="icon_round off">재시험</span></div>
+									<div class="score"><span class="my maincolor2">80점</span>&nbsp;/&nbsp;100점</div>
+								</div>
+								<!-- //떨어진 경우(교차노출) -->
+								<div class="exam_rate">
+									<ul>
+										<li><b>등수</b><span class="maincolor1">N등</span>&nbsp;/&nbsp;N명</li>
+										<li><b>백분위</b>NN%</li>
+										<li><b>평균점수</b>NN점</li>
+									</ul>
+								</div>
+								<div class="btn_area mt20">
+									<a href="javascript:;" class="btn_basic2 type2 radius">문제지 다운로드</a>
+									<a href="javascript:;" class="btn_basic2 type2 radius">해설지 다운로드</a>
+								</div>
+								<div class="exam_answer">
+									<ul>
+										<!--  
+												정답인 경우 : .correct,
+												오답인 경우 : .wrong
+										-->
+										<li class="correct">
+											<div class="result">
+												<div class="sheet"><span class="num">1</span>학생작성 답안</div>
+												<div class="answer"><span class="ok">정답: 입력된 정답</span>정답률: NN%</div>
+											</div>
+										</li>
+										<li class="wrong">
+											<div class="result">
+												<div class="sheet"><span class="num">2</span>학생작성 답안</div>
+												<div class="answer"><span class="ok">정답: 입력된 정답</span>정답률: NN%</div>
+											</div>
+										</li>
+										<li class="correct">
+											<div class="result">
+												<div class="sheet"><span class="num">3</span>학생작성 답안</div>
+												<div class="answer"><span class="ok">정답: 입력된 정답</span>정답률: NN%</div>
+											</div>
+										</li>
+										<li class="wrong">
+											<div class="result">
+												<div class="sheet"><span class="num">4</span>학생작성 답안</div>
+												<div class="answer"><span class="ok">정답: 입력된 정답</span>정답률: NN%</div>
+											</div>
+										</li>
+										<li class="correct">
+											<div class="result">
+												<div class="sheet"><span class="num">5</span>학생작성 답안</div>
+												<div class="answer"><span class="ok">정답: 입력된 정답</span>정답률: NN%</div>
+											</div>
+										</li>
+										<li class="wrong">
+											<div class="result">
+												<div class="sheet"><span class="num">6</span>학생작성 답안</div>
+												<div class="answer"><span class="ok">정답: 입력된 정답</span>정답률: NN%</div>
+											</div>
+										</li>
+										<li class="correct">
+											<div class="result">
+												<div class="sheet"><span class="num">7</span>학생작성 답안</div>
+												<div class="answer"><span class="ok">정답: 입력된 정답</span>정답률: NN%</div>
+											</div>
+										</li>
+										<li class="wrong">
+											<div class="result">
+												<div class="sheet"><span class="num">8</span>학생작성 답안</div>
+												<div class="answer"><span class="ok">정답: 입력된 정답</span>정답률: NN%</div>
+											</div>
+										</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- //3. 시험결과 -->
+</div>
+<!-- //시험 팝업 -->
+<script>
+	$("body, html").css('background', 'none');
+</script>
+	</body>
+</html>
+

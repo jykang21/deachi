@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ko">
+	<head>
+		<meta content="text/html" charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, maximum-scale=1, minimum-scale=1, initial-scale=1, user-scalable=yes">
+		<meta name="Title" content="">
+		<meta name="Keywords" content="">
+		<meta name="Description" content="">
+		<title>모두의대치동</title>
+		<link rel="stylesheet" type="text/css" href="/common/css/reset.css"/>
+		<link rel="stylesheet" type="text/css" href="/live/css/reset.css"/>
+		<link rel="stylesheet" type="text/css" href="/common/css/common.css"/>
+
+		<script type="text/javascript" src="https://www.bravecompany.net/js/jquery.min.js"></script>
+	</head>
+	<body>
+<!-- 테스트목록 팝업 -->
+<div class="layout_popup_wrap">
+	<div class="bg"></div>
+	<div class="layout_popup pop_w770 pop_radius">
+		<div class="pop_wrap">
+			<div class="close"><a href="javascript:;" id="exmListClose">팝업닫기</a></div>
+			<div class="contents_w">
+				<!-- LMS 링크정보로 변경 -->
+				<div class="pop_cont_wrap">
+					<div class="pop_title">테스트 목록</div>
+					<div class="pop_cont_in">
+                        <div class="table_basic_board_wrap">
+                            <div class="btn_search flat">
+                                <div class="middle mt10">
+                                    <div class="input_box">
+                                        <div class="chk_box">
+                                            <input type="checkbox" name="exam_type" id="exam1">
+                                            <label for="exam1"><span>강의에 등록된 시험만 보기</span></label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="middle mb20 fr">
+                                    <input type="text" name="eval_tit" placeholder="시험명으로 검색하세요" class="input1 middle" style="width: 240px;">
+                                    <a href="javascript:;" class="btn_basic3 radius active ml5">검색</a>
+                                </div>
+                            </div>
+                            <div class="table_basic_board board1 mt20 scorll" style="width: 100%; max-height: 500px; margin: 0 auto;">
+                                <table>
+                                    <colgroup>
+                                        <col width="*">
+                                        <col width="102px">
+                                        <col width="72px">
+                                        <col width="72px">
+                                        <col width="120px">
+                                        <col width="126px">
+                                    </colgroup>
+                                    <tbody>
+                                        <tr>
+                                            <th>시험명</th>
+                                            <th>시험타입</th>
+                                            <th>문항수</th>
+                                            <th>시험시간</th>
+                                            <th>등록일시</th>
+                                            <th>시작하기</th>
+                                        </tr>
+                                        <tr>
+                                            <td class="left"><a href="javascript:;" class="btn_text">시험명시험명시험명시험명</a></td>
+                                            <td>데일리시험</td>
+                                            <td>20</td>
+                                            <td>20분</td>
+                                            <td>2021.1.1 12:23</td>
+                                            <td><a href="javascript:;" class="btn_basic2 type2 radius active">테스트 시작</a></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="left"><a href="javascript:;" class="btn_text">시험명시험명시험명</a></td>
+                                            <td>데일리시험</td>
+                                            <td>20</td>
+                                            <td>20분</td>
+                                            <td>2021.1.1 12:23</td>
+                                            <td><a href="javascript:;" class="btn_basic2 type2 radius active">테스트 시작</a></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="left"><a href="javascript:;" class="btn_text">시험명시험명시험명</a></td>
+                                            <td>데일리시험</td>
+                                            <td>-</td>
+                                            <td>20분</td>
+                                            <td>2021.1.1 12:23</td>
+                                            <td><a href="javascript:;" class="btn_basic2 type2 radius active">테스트 시작</a></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <!-- 페이징 -->
+                        <div class="btn_page_fin mt30 mb10">
+                            <a href="javascript:;" class="prev">이전페이지</a>
+                            <span class="num">
+                                <a href="javascript:;" class="on">1</a>
+                                <a href="javascript:;">2</a>
+                                <a href="javascript:;">3</a>
+                                <a href="javascript:;">4</a>
+                                <a href="javascript:;">5</a>
+                                <a href="javascript:;">6</a>
+                                <a href="javascript:;">7</a>
+                                <a href="javascript:;">8</a>
+                                <a href="javascript:;">9</a>
+                                <a href="javascript:;">10</a>
+                            </span>
+                            <a href="javascript:;" class="next">다음페이지</a>
+                        </div>
+                        <!-- //페이징 -->
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- //테스트목록 팝업 -->
+	</body>
+	<script type="text/javascript">
+		$(document).ready(function () {
+			$('#exmListClose').click(function(){
+				$(parent.document).find('#examScreen').hide();
+			});
+		});
+	</script>
+</html>
